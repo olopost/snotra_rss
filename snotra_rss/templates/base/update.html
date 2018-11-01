@@ -1,0 +1,38 @@
+{% extends 'wagtailadmin/base.html' %}
+
+{% block content %}
+
+    <header class="">
+        <div class="row nice-padding">
+            <div class="left">
+                <div class="col header-title">
+                    <h1 class="icon icon-user">RSS Update</h1>
+                </div>
+            </div>
+            <div class="right"></div>
+        </div>
+    </header>
+
+
+    <h2>Liste des feeds</h2>
+    <ul>
+
+        {% for f in feeds %}
+         <li> {{ f.name }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Liste des articles</h2>
+    <ul>
+
+        {% for f in entries %}
+            <li> {{ f.content|safe }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Mettre à jour</h2>
+<form method="post" action="/update/">
+  {% csrf_token %}
+  <div class="submit-row">
+  <input type="submit" class="button" name="update_now" value="Mettre à jour">
+  </div>
+</form>
+{% endblock content %}
