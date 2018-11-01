@@ -1,0 +1,17 @@
+{
+  "name": "Snotra RSS",
+  "description": "Wagtail app for add RSS Aggregator feature",
+  "repository": "https://github.com/olopost/snotra_rss",
+  "keywords": ["wagtail", "django", "rss"],
+  "env": {
+    "DJANGO_DEBUG": "off",
+    "DJANGO_SETTINGS_MODULE": "snotra_rss.settings.production",
+    "DJANGO_SECURE_SSL_REDIRECT": "on"
+  },
+  "scripts": {
+    "postdeploy": "django-admin.py migrate"
+  },
+  "addons": [
+    ""
+  ]
+}
