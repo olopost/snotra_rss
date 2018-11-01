@@ -1,0 +1,1 @@
+name = "snotra_rss"
