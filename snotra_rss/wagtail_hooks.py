@@ -1,24 +1,12 @@
-from django.conf.urls import url
-from django.urls import reverse
-
-from wagtail.core import hooks
-from wagtail.admin.menu import MenuItem
-from ..models import RSSEntriesAdmin
-
-
 from django.db.models import BooleanField, DateField, Model, CharField, ForeignKey, \
     DO_NOTHING, URLField, TextField
 from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
 from django.views.generic.base import TemplateView
 from django.http import JsonResponse
 from django.shortcuts import redirect
-from wagtail.core.models import Page
 from datetime import datetime
 import time
 import logging
-from wagtail.core.models import Page
-from wagtail.documents.models import Document
-from wagtail.contrib.forms.models import AbstractFormField
 import feedparser
 import ssl
 from time import mktime
