@@ -10,6 +10,7 @@ import ssl
 from time import mktime
 from django.views.decorators.csrf import csrf_exempt
 
+from wagtail.core import hooks
 from .models import RSSEntries, RSSFeeds
 
 if hasattr(ssl, '_create_unverified_context'):
@@ -55,6 +56,7 @@ class RSSEntriesAdmin(ModelAdmin):
 modeladmin_register(RSSEntriesAdmin)
 
 
+@hooks.register('rssupdate')
 def update_rss(request):
     """
     uri for update rss feeds
@@ -156,4 +158,5 @@ class ConsultRss(TemplateView):
         context['feeds'] = self.feeds
         context['entries'] = RSSEntries.objects.filter(id=self.request.GET['id'])
         return context
+
 
