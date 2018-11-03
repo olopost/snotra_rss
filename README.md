@@ -1,6 +1,13 @@
 # snotra_rss
 Wagtail extension for add RSS aggregator feature
 
+## Capture
+![capture](doc/entries.png)
+
+
+![capture of article](doc/article.png)
+
+
 
 ## installation
 add the following line to your requirements.txt file :
