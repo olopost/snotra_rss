@@ -7,7 +7,7 @@ setuptools.setup(
     name="snotra_rss",
     version="0.0.1",
     author="Samuel MEYNARD",
-    author_email="samule@meyn.fr",
+    author_email="samuel@meyn.fr",
     description="Wagtail app - with rss aggregator feature",
     long_description=long_description,
     long_description_content_type="text/markdown",
