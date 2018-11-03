@@ -1,5 +1,3 @@
-from django.db.models import BooleanField, DateField, Model, CharField, ForeignKey, \
-    DO_NOTHING, URLField, TextField
 from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
 from django.views.generic.base import TemplateView
 from django.http import JsonResponse
@@ -12,24 +10,15 @@ import ssl
 from time import mktime
 from django.views.decorators.csrf import csrf_exempt
 
+from .models import RSSEntries, RSSFeeds
+
 if hasattr(ssl, '_create_unverified_context'):
     ssl._create_default_https_context = ssl._create_unverified_context
 
 logger = logging.getLogger('snotra')
 
 
-class RSSFeeds(Model):
-    """
-    RSS Feeds Data models
-    Feed is view as RSS source
 
-    """
-    name = CharField("Name", max_length=120, null=False)
-    url = URLField("URL", null=False)
-    active = BooleanField(default=True, null=False)
-
-    def __str__(self):
-        return self.name
 
 
 class RSSFeedsAdmin(ModelAdmin):
@@ -48,24 +37,6 @@ class RSSFeedsAdmin(ModelAdmin):
 modeladmin_register(RSSFeedsAdmin)
 
 
-class RSSEntries(Model):
-    """
-    Rss entries data Models
-    Entries is view as rss source article
-    """
-    title = CharField("Title", max_length=200, null=False)
-    content = TextField("Content")
-    rssid = CharField("ID", max_length=200)
-    published = DateField("Published")
-    update = DateField("Updated")
-    tag = CharField("Tag", max_length=100)
-    feed = ForeignKey(RSSFeeds, on_delete=DO_NOTHING)
-
-    def linkurl(self):
-        from django.utils.html import format_html
-        return format_html('<a href="/rss_read?id={}">{}</a>',
-                           self.id,
-                           self.title)
 
 
 class RSSEntriesAdmin(ModelAdmin):
