@@ -93,7 +93,7 @@ def update_rss(request):
 
             else:
                 logger.debug("rss entry already exist")
-    return redirect('/admin/home/rssentries/')
+    return redirect('/admin/snotra_rss/rssentries/')
 
 
 @csrf_exempt
