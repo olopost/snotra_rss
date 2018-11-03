@@ -13,6 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/olopost/snotra_rss",
     packages=setuptools.find_packages(),
+    package_dir={'snotra_rss': 'snotra_rss'},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
