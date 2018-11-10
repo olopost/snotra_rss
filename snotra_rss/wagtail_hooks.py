@@ -34,7 +34,6 @@ class RSSFeedsAdmin(ModelAdmin):
     list_filter = ('name', 'url', 'active')
     search_fields = ('name', 'url')
 
-
 modeladmin_register(RSSFeedsAdmin)
 
 
