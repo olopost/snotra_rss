@@ -1,5 +1,5 @@
 from django.db.models import BooleanField, DateField, Model, CharField, ForeignKey, \
-    DO_NOTHING, URLField, TextField
+    DO_NOTHING, CASCADE, URLField, TextField
 
 class RSSFeeds(Model):
     """
@@ -30,12 +30,11 @@ class RSSEntries(Model):
     published = DateField("Published")
     update = DateField("Updated")
     tag = CharField("Tag", max_length=100)
-    feed = ForeignKey(RSSFeeds, on_delete=DO_NOTHING)
+    feed = ForeignKey(RSSFeeds, on_delete=CASCADE)
 
     class Meta:
         verbose_name = "RSS Entry"
         verbose_name_plural = "RSS Entries"
-
 
     def linkurl(self):
         from django.utils.html import format_html
