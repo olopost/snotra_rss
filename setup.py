@@ -9,7 +9,7 @@ setuptools.setup(
     author="Samuel MEYNARD",
     author_email="samuel@meyn.fr",
     description="Wagtail app - with rss aggregator feature",
-    long_description=long_description,
+    #long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/olopost/snotra_rss",
     packages=setuptools.find_packages(),
