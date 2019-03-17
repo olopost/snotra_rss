@@ -1,8 +1,10 @@
 from django.conf import settings
 from django.conf.urls import include, url
+from wagtail.admin import urls as wagtailadmin_urls
 from .wagtail_hooks import update_rss, ConsultRss, feverapi
 
 urlpatterns = [
+    url(r'^admin/', include(wagtailadmin_urls)),
     url(r'^update/$', update_rss, name='rss update'),
     url(r'^rss_read/$', ConsultRss.as_view(), name='rss update'),
     url(r'^fever/$', feverapi, name="feverapi"),

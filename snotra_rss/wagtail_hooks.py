@@ -1,4 +1,4 @@
-from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
+from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register, ModelAdminGroup
 from django.views.generic.base import TemplateView
 from django.http import JsonResponse
 from django.shortcuts import redirect
@@ -34,7 +34,6 @@ class RSSFeedsAdmin(ModelAdmin):
     list_filter = ('name', 'url', 'active')
     search_fields = ('name', 'url')
 
-modeladmin_register(RSSFeedsAdmin)
 
 
 
@@ -52,7 +51,6 @@ class RSSEntriesAdmin(ModelAdmin):
     ordering = ('-update', '-published')
 
 
-modeladmin_register(RSSEntriesAdmin)
 
 
 @hooks.register('rssupdate')
@@ -158,4 +156,10 @@ class ConsultRss(TemplateView):
         context['entries'] = RSSEntries.objects.filter(id=self.request.GET['id'])
         return context
 
+class Snotra(ModelAdminGroup):
+    menu_label = "Snotra"
+    menu_icon = "book"
+    items = (RSSEntriesAdmin, RSSFeedsAdmin)
+
+modeladmin_register(Snotra)
 
