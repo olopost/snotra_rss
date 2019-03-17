@@ -4,8 +4,8 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.shortcuts import redirect
 from datetime import datetime, timedelta
-from apscheduler.schedulers.background import BackgroundScheduler
-from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
+#from apscheduler.schedulers.background import BackgroundScheduler
+#from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 
 import time
 import logging
@@ -25,15 +25,13 @@ ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 
 
-from apscheduler.schedulers.background import BackgroundScheduler
-
-scheduler = BackgroundScheduler()
-
-from django_apscheduler.jobstores import DjangoJobStore
+#from apscheduler.schedulers.background import BackgroundScheduler
+#scheduler = BackgroundScheduler()
+#from django_apscheduler.jobstores import DjangoJobStore
 
 # If you want all scheduled jobs to use this store by default,
 # use the name 'default' instead of 'djangojobstore'.
-scheduler.add_jobstore(DjangoJobStore(), "default")
+#scheduler.add_jobstore(DjangoJobStore(), "default")
 
 
 class RSSFeedsAdmin(ModelAdmin):
@@ -65,7 +63,7 @@ class RSSEntriesAdmin(ModelAdmin):
     ordering = ('-update', '-published')
 
 
-@register_job(scheduler, "interval", hours=3)
+#@register_job(scheduler, "interval", hours=3)
 def local_update():
     logging.debug("local update")
     print("local---updt")
