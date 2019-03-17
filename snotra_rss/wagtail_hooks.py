@@ -1,8 +1,9 @@
 from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register, ModelAdminGroup
 from django.views.generic.base import TemplateView
 from django.http import JsonResponse
+from django.contrib import messages
 from django.shortcuts import redirect
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import logging
 import feedparser
@@ -60,9 +61,15 @@ def update_rss(request):
     :param request: the request query object (parse POST and GET attribute)
     :return: HTTP redirection
     """
+    three_month = datetime.now() - timedelta(days=90)
+    to_del = RSSEntries.objects.filter(published__lte=three_month).delete()
     feeds = RSSFeeds.objects.filter(active=True)
     for f in feeds:
+        start = time.time()
         lfeed = feedparser.parse(f.url)
+        end = time.time()
+        del_time = end - start
+        messages.add_message(request, messages.INFO, "temps de parsing : " + str(round(del_time * 1000, 1)) + " ms")
         for e in lfeed.entries:
             if not hasattr(e, 'id'):
                 import hashlib
