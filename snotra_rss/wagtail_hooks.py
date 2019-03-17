@@ -223,6 +223,6 @@ modeladmin_register(Snotra)
 
 
 #launch scheduler
-register_events(scheduler)
-scheduler.start()
-print("Scheduler started!")
+#register_events(scheduler)
+#scheduler.start()
+#print("Scheduler started!")
