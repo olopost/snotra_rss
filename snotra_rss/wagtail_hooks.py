@@ -60,7 +60,7 @@ def update_rss(request):
     :param request: the request query object (parse POST and GET attribute)
     :return: HTTP redirection
     """
-    feeds = RSSFeeds.objects.all()
+    feeds = RSSFeeds.objects.filter(active=True)
     for f in feeds:
         lfeed = feedparser.parse(f.url)
         for e in lfeed.entries:
