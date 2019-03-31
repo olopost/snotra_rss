@@ -118,7 +118,7 @@ def update_rss(request):
         lfeed = feedparser.parse(f.url)
         end = time.time()
         del_time = end - start
-        messages.add_message(request, messages.INFO, "temps de parsing : " + str(round(del_time * 1000, 1)) + " ms")
+        messages.add_message(request, messages.INFO, f.Name + " - temps de parsing : " + str(round(del_time * 1000, 1)) + " ms")
         for e in lfeed.entries:
             if not hasattr(e, 'id'):
                 import hashlib
