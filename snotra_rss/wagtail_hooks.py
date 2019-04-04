@@ -212,13 +212,11 @@ def feverapi(request):
                        'html': e.content,
                        'created_on_time': ontime}
                 myitems.append(ejs)
-                print(ejs)
                 response['items'] = myitems
         if 'saved_item_ids' in request.GET:
             response['unread_item_ids'] = '1'
         if 'unread_item_ids' in request.GET:
             response['unread_item_ids'] = '1'
-        print(response)
         return JsonResponse(response)
     else:
         return JsonResponse({})
