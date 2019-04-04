@@ -1,6 +1,13 @@
 # snotra_rss
 Wagtail extension for add RSS aggregator feature
 
+## Big news
+Now full support Fever API !
+Please configure your account in Feed account
+
+![feed account](doc/feed%20account.png)
+
+
 ## Capture
 ![capture](doc/entries.png)
 
