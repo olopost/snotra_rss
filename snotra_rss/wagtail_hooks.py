@@ -3,7 +3,7 @@ from django.views.generic.base import TemplateView
 from django.http import JsonResponse
 from django.contrib import messages
 from django.shortcuts import redirect
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 #from apscheduler.schedulers.background import BackgroundScheduler
 #from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 
@@ -15,14 +15,13 @@ from time import mktime
 from django.views.decorators.csrf import csrf_exempt
 
 from wagtail.core import hooks
-from .models import RSSEntries, RSSFeeds
+from .models import RSSEntries, RSSFeeds, Compte
 
 if hasattr(ssl, '_create_unverified_context'):
     ssl._create_default_https_context = ssl._create_unverified_context
 
 logger = logging.getLogger('snotra')
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+ch = logging.basicConfig(filename='fever.log', level=logging.DEBUG)
 
 
 #from apscheduler.schedulers.background import BackgroundScheduler
@@ -48,7 +47,11 @@ class RSSFeedsAdmin(ModelAdmin):
 
 
 
-
+class CompteAdmin(ModelAdmin):
+    model = Compte
+    menu_label = "RSS Feeds Account"
+    menu_icon = "user"
+    menu_order = 300
 
 class RSSEntriesAdmin(ModelAdmin):
     """
@@ -66,7 +69,6 @@ class RSSEntriesAdmin(ModelAdmin):
 #@register_job(scheduler, "interval", hours=3)
 def local_update():
     logging.debug("local update")
-    print("local---updt")
     feeds = RSSFeeds.objects.filter(active=True)
     for f in feeds:
         start = time.time()
@@ -157,36 +159,60 @@ def feverapi(request):
     :return: Json response at a format compatible with fever Api
     """
     d = datetime.now()
-    print(request.POST['api_key'])
+    allowaccount = []
+    for c in Compte.objects.all():
+        import hashlib
+        m = hashlib.md5()
+        myhash = str(c.email) + ":" + str(c.passwd)
+        m.update(myhash.encode('utf-8'))
+        allowaccount.append(m.hexdigest())
     response = {}
-    if request.POST['api_key'] == '97739357c711eb26618e116d68d92d64':
+    if 'api_key' in request.POST.keys() and request.POST['api_key'] in allowaccount:
         response['api_version'] = 3.0
         response['auth'] = 1
         if 'groups' in request.GET:
-            mygroups = [{'id': 1, 'title': 'mygroup'}]
+            logger.info('groups')
+            mygroups = [{'id': 1, 'title': 'SnotraRSS'}]
             response['groups'] = mygroups
         if 'feeds' in request.GET:
-            print('get feeds')
-            response['feeds'] = [{'id': 1,
+            logger.debug('get feeds')
+            myfeed = []
+            myfeedgroup = []
+            for f in RSSFeeds.objects.all():
+                fjs = {'id': str(f.id),
                                   'favicon_id': 1,
-                                  'title': 'test',
-                                  'url': 'https://perso.meyn.fr',
-                                  'site_url': 'https://perso.meyn.fr',
+                                  'title': f.name,
+                                  'url': f.url,
+                                  'site_url': f.url,
                                   'is_spark': 0,
-                                  'last_update_on_time': (int(time.mktime(d.timetuple())))}]
-            response['feeds_groups'] = [{'group_id': 1, 'feed_ids': '1'}]
+                                  'last_update_on_time': (d - datetime(1970,1,1)).total_seconds()}
+                fgjs = {'group_id': 1, 'feed_ids': str(f.id)}
+                myfeed.append(fjs)
+                myfeedgroup.append(fgjs)
+                response['feeds'] = myfeed
+                response['feeds_groups'] = myfeedgroup
         myitems = []
-        entries = RSSEntries.objects.all()
         if 'items' in request.GET:
+            if 'since_id' in request.GET.keys():
+                entries = RSSEntries.objects.filter(id__gt=int(request.GET['since_id']))
+            else:
+                entries = RSSEntries.objects.all()
             for e in entries:
-                ejs = {'id': e.rssid,
-                       'feed_id': 1,
+                if type(e.published) == type(date(1970, 1, 1)):
+                    ontime = (e.published - date(1970, 1, 1)).total_seconds()
+                else:
+                    ontime = (e.published - datetime(1970, 1, 1)).total_seconds()
+
+                logger.info(type(e.published))
+                ejs = {'id': e.id,
+                       'feed_id': e.feed.id,
                        'title': e.title,
                        'url': e.linkurl(),
                        'is_read': 0,
                        'html': e.content,
-                       'created_on_time': e.published}
+                       'created_on_time': ontime}
                 myitems.append(ejs)
+                print(ejs)
                 response['items'] = myitems
         if 'saved_item_ids' in request.GET:
             response['unread_item_ids'] = '1'
@@ -215,7 +241,7 @@ class ConsultRss(TemplateView):
 class Snotra(ModelAdminGroup):
     menu_label = "Snotra"
     menu_icon = "book"
-    items = (RSSEntriesAdmin, RSSFeedsAdmin)
+    items = (RSSEntriesAdmin, RSSFeedsAdmin, CompteAdmin)
 
 modeladmin_register(Snotra)
 
