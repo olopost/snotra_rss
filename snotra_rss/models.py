@@ -36,6 +36,9 @@ class RSSEntries(Model):
     update = DateField("Updated")
     tag = CharField("Tag", max_length=100)
     feed = ForeignKey(RSSFeeds, on_delete=CASCADE)
+    is_saved = BooleanField(default=False)
+    is_read = BooleanField(default=False)
+    url = CharField("URL", max_length=200, null=False)
 
     class Meta:
         verbose_name = "RSS Entry"

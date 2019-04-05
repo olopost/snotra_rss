@@ -19,9 +19,10 @@ from .models import RSSEntries, RSSFeeds, Compte
 
 if hasattr(ssl, '_create_unverified_context'):
     ssl._create_default_https_context = ssl._create_unverified_context
-
-logger = logging.getLogger('snotra')
-ch = logging.basicConfig(filename='fever.log', level=logging.DEBUG)
+if __debug__:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 
 #from apscheduler.schedulers.background import BackgroundScheduler
@@ -74,7 +75,7 @@ def local_update():
         start = time.time()
         lfeed = feedparser.parse(f.url)
         end = time.time()
-        logger.info("parse in :" + str(end - start) + "s")
+        logging.info("parse in :" + str(end - start) + "s")
         for e in lfeed.entries:
             if not hasattr(e, 'id'):
                 import hashlib
@@ -101,7 +102,7 @@ def local_update():
                     em.save()
 
             else:
-                logger.debug("rss entry already exist")
+                logging.debug("rss entry already exist")
 
 
 
@@ -112,8 +113,17 @@ def update_rss(request):
     :param request: the request query object (parse POST and GET attribute)
     :return: HTTP redirection
     """
-    three_month = datetime.now() - timedelta(days=90)
-    to_del = RSSEntries.objects.filter(published__lte=three_month).delete()
+    deldate = datetime.now() - timedelta(days=90)
+    try:
+        logging.debug("Tentative de suppression")
+        e = RSSEntries.objects.filter(published__lte=deldate, is_read=True, is_saved=False)
+        messages.add_message(request, messages.INFO, str(len(e)) + " messages supprimés")
+        for ee in e:
+            logging.debug("Suppression de " + ee.title)
+        e.delete()
+    except Exception as e:
+        logging.error("Erreur durant la suppression")
+        messages.add_message(request, messages.ERROR, "Erreur durant la suppression")
     feeds = RSSFeeds.objects.filter(active=True)
     for f in feeds:
         start = time.time()
@@ -122,6 +132,9 @@ def update_rss(request):
         del_time = end - start
         messages.add_message(request, messages.INFO, str(f.name) + " - temps de parsing : " + str(round(del_time * 1000, 1)) + " ms")
         for e in lfeed.entries:
+            if datetime.fromtimestamp(mktime(e.published_parsed)) < deldate:
+                logging.debug("feed < deldate : " + e.title)
+                break
             if not hasattr(e, 'id'):
                 import hashlib
                 e.id = hashlib.sha1(e.title.encode("utf-8")).hexdigest()
@@ -147,9 +160,8 @@ def update_rss(request):
                     em.save()
 
             else:
-                logger.debug("rss entry already exist")
+                logging.debug("rss entry already exist : " + str(e.id))
     return redirect('/admin/snotra_rss/rssentries/')
-
 
 @csrf_exempt
 def feverapi(request):
@@ -159,6 +171,8 @@ def feverapi(request):
     :return: Json response at a format compatible with fever Api
     """
     d = datetime.now()
+    logging.debug("--- New request ---")
+    logging.debug(request.POST)
     allowaccount = []
     for c in Compte.objects.all():
         import hashlib
@@ -171,11 +185,10 @@ def feverapi(request):
         response['api_version'] = 3.0
         response['auth'] = 1
         if 'groups' in request.GET:
-            logger.info('groups')
             mygroups = [{'id': 1, 'title': 'SnotraRSS'}]
             response['groups'] = mygroups
         if 'feeds' in request.GET:
-            logger.debug('get feeds')
+            logging.debug('get feeds')
             myfeed = []
             myfeedgroup = []
             for f in RSSFeeds.objects.all():
@@ -203,7 +216,6 @@ def feverapi(request):
                 else:
                     ontime = (e.published - datetime(1970, 1, 1)).total_seconds()
 
-                logger.info(type(e.published))
                 ejs = {'id': e.id,
                        'feed_id': e.feed.id,
                        'title': e.title,
@@ -214,9 +226,40 @@ def feverapi(request):
                 myitems.append(ejs)
                 response['items'] = myitems
         if 'saved_item_ids' in request.GET:
-            response['unread_item_ids'] = '1'
+            star = RSSEntries.objects.filter(is_saved=True)
+            lu = ""
+            for u in star:
+                if lu == "":
+                    lu = str(u.id)
+                else:
+                    lu = lu + "," + str(u.id)
+            response['saved_item_ids'] = str(lu)
+            logging.debug("Saved : " + str(lu))
         if 'unread_item_ids' in request.GET:
-            response['unread_item_ids'] = '1'
+            unread = RSSEntries.objects.filter(is_read=False)
+            lu = ""
+            for u in unread:
+                if lu == "":
+                    lu = str(u.id)
+                else:
+                    lu = lu + "," + str(u.id)
+            response['unread_item_ids'] = str(lu)
+            logging.debug("Unread : " + str(lu))
+        if 'mark' in request.POST:
+            if 'id' in request.POST.keys() and 'as' in request.POST.keys():
+                logging.debug("Mark item " + request.POST['id'] + " as " + request.POST['as'])
+                item = RSSEntries.objects.get(id=request.POST['id'])
+                if request.POST['as'] == 'read':
+                    item.is_read = True
+                elif request.POST['as'] == 'unread':
+                    item.is_read = False
+                elif request.POST['as'] == 'saved':
+                    item.is_saved = True
+                elif request.POST['as'] == 'unsaved':
+                    item.is_saved = False
+                else:
+                    logging.error("Unknown value for Mark item : " + str(request.POST))
+                item.save()
         return JsonResponse(response)
     else:
         return JsonResponse({})
