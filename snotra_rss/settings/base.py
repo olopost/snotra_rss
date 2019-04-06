@@ -36,7 +36,7 @@ INSTALLED_APPS = [
     'django_apscheduler',
     'wagtail.images',
     'wagtail.search',
-    'wagtail.admin',
+    #'wagtail.admin',
     'wagtail.core',
 
     'modelcluster',
