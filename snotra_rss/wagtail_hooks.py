@@ -74,45 +74,6 @@ class RSSEntriesAdmin(ModelAdmin):
 
 
 
-#@register_job(scheduler, "interval", hours=3)
-def local_update():
-    logging.debug("local update")
-    feeds = RSSFeeds.objects.filter(active=True)
-    for f in feeds:
-        start = time.time()
-        lfeed = feedparser.parse(f.url)
-        end = time.time()
-        logging.info("parse in :" + str(end - start) + "s")
-        for e in lfeed.entries:
-            if not hasattr(e, 'id'):
-                import hashlib
-                e.id = hashlib.sha1(e.title.encode("utf-8")).hexdigest()
-            if not RSSEntries.objects.filter(rssid=e.id).exists():
-                if not hasattr(e, 'published_parsed'):
-                    e.published_parsed = e.updated_parsed
-                if not hasattr(e, 'tags'):
-                    tags = "no-tags"
-                else:
-                    tags = e.tags[len(e.tags) - 1].term
-                if not hasattr(e, 'id'):
-                    import hashlib
-                    e.id = hashlib.sha1(e.title.encode("utf-8")).hexdigest()
-                if hasattr(e, 'content') and hasattr(e, 'title'):
-                    em = RSSEntries(feed=f, title=e.title, content=e.content[0].value, rssid=e.id,
-                                    published=datetime.fromtimestamp(mktime(e.published_parsed)),
-                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), tag=tags)
-                    em.save()
-                else:
-                    em = RSSEntries(feed=f, title=e.title, content=e.summary, rssid=e.id,
-                                    published=datetime.fromtimestamp(mktime(e.published_parsed)),
-                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), tag=tags)
-                    em.save()
-
-            else:
-                logging.debug("rss entry already exist")
-
-
-
 @hooks.register('rssupdate')
 def update_rss(request):
     """
@@ -185,8 +146,12 @@ def feverapi(request):
     """
     d = datetime.now()
     logging.debug("--- New request ---")
-    logging.debug(request.POST)
+    logging.debug("POST : " + str(request.POST))
+    logging.debug("GET  : " + str(request.GET))
     allowaccount = []
+    if 'refresh' in request.GET.keys():
+        logging.debug("Update RSS")
+        update_rss(request)
     for c in Compte.objects.all():
         import hashlib
         m = hashlib.md5()
