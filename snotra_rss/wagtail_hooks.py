@@ -66,6 +66,12 @@ class RSSEntriesAdmin(ModelAdmin):
     list_filter = ['feed', 'tag']
     ordering = ('-update', '-published')
 
+    #fix issues in wagtail for django2.2 fix5106
+    from django.contrib.admin import site as default_django_admin_site
+    admin_site = default_django_admin_site
+    #end fix
+
+
 
 #@register_job(scheduler, "interval", hours=3)
 def local_update():
