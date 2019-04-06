@@ -138,7 +138,9 @@ def update_rss(request):
         end = time.time()
         del_time = end - start
         messages.add_message(request, messages.INFO, str(f.name) + " - temps de parsing : " + str(round(del_time * 1000, 1)) + " ms")
+        logging.info(str(f.name) + " nb : " + str(len(lfeed.entries)))
         for e in lfeed.entries:
+            logging.debug(e)
             if datetime.fromtimestamp(mktime(e.published_parsed)) < deldate:
                 logging.debug("feed < deldate : " + e.title)
                 break
@@ -152,18 +154,22 @@ def update_rss(request):
                     tags = "no-tags"
                 else:
                     tags = e.tags[len(e.tags) - 1].term
+                if not hasattr(e, 'link'):
+                    link = ""
+                else:
+                    link = e.link
                 if not hasattr(e, 'id'):
                     import hashlib
                     e.id = hashlib.sha1(e.title.encode("utf-8")).hexdigest()
                 if hasattr(e, 'content') and hasattr(e, 'title'):
                     em = RSSEntries(feed=f, title=e.title, content=e.content[0].value, rssid=e.id,
                                     published=datetime.fromtimestamp(mktime(e.published_parsed)),
-                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), tag=tags)
+                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), tag=tags, url=link)
                     em.save()
                 else:
                     em = RSSEntries(feed=f, title=e.title, content=e.summary, rssid=e.id,
                                     published=datetime.fromtimestamp(mktime(e.published_parsed)),
-                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), tag=tags)
+                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), tag=tags, url=link)
                     em.save()
 
             else:
@@ -226,7 +232,7 @@ def feverapi(request):
                 ejs = {'id': e.id,
                        'feed_id': e.feed.id,
                        'title': e.title,
-                       'url': e.linkurl(),
+                       'url': e.url,
                        'is_read': 0,
                        'html': e.content,
                        'created_on_time': ontime}
