@@ -195,7 +195,7 @@ def feverapi(request):
                 if type(e.published) == type(date(1970, 1, 1)):
                     ontime = (e.published - date(1970, 1, 1)).total_seconds()
                 else:
-                    ontime = e.published.utcfromtimestamp()
+                    ontime = time.mktime(e.published.timetuple())
 
                 ejs = {'id': e.id,
                        'feed_id': e.feed.id,
