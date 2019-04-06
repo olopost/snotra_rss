@@ -1,0 +1,9 @@
+id,name,url,active
+1,78actu            ,https://actu.fr/78actu/rss.xml           ,t
+2,xkcd              ,https://xkcd.com/rss.xml                 ,t
+3,Mac4ever - Article,https://www.mac4ever.com/rss/dossier     ,t
+4,MacBidouille      ,http://macbidouille.com/rss              ,t
+5,Choux romanesco   ,http://eljjdx.canalblog.com/rss.xml      ,t
+6,Cert - ALL        ,https://www.cert.ssi.gouv.fr/feed/       ,t
+7,Django            ,https://www.djangoproject.com/rss/weblog/,t
+8,CommitStrip       ,https://www.commitstrip.com/fr/feed/     ,t
