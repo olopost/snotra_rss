@@ -2,6 +2,7 @@ from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register, 
 from django.views.generic.base import TemplateView
 from django.http import JsonResponse
 from django.contrib import messages
+from django.db import transaction
 from django.shortcuts import redirect
 from datetime import datetime, timedelta, date
 #from apscheduler.schedulers.background import BackgroundScheduler
@@ -251,7 +252,7 @@ def feverapi(request):
                     lu = lu + "," + str(u.id)
             response['unread_item_ids'] = str(lu)
             logging.debug("Unread : " + str(lu))
-        if 'mark' in request.POST:
+        if 'mark' in request.POST and request.POST['mark'] == 'item':
             if 'id' in request.POST.keys() and 'as' in request.POST.keys():
                 logging.debug("Mark item " + request.POST['id'] + " as " + request.POST['as'])
                 item = RSSEntries.objects.get(id=request.POST['id'])
@@ -266,6 +267,15 @@ def feverapi(request):
                 else:
                     logging.error("Unknown value for Mark item : " + str(request.POST))
                 item.save()
+        if 'mark' in request.POST and request.POST['mark'] == 'feed':
+            if 'id' in request.POST.keys() and 'as' in request.POST.keys():
+                logging.debug("Mark feed " + request.POST['id'] + " as " + request.POST['as'])
+                item = RSSEntries.objects.filter(feed__id=request.POST['id'])
+                with transaction.atomic():
+                    if request.POST['as'] == 'read':
+                        for i in item:
+                            i.is_read = True
+                            i.save()
         return JsonResponse(response)
     else:
         return JsonResponse({})
