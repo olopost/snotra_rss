@@ -4,9 +4,12 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.db import transaction
 from django.shortcuts import redirect
+from django.conf import settings
 from datetime import datetime, timedelta, date
 #from apscheduler.schedulers.background import BackgroundScheduler
 #from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
+from django.utils.timezone import activate
+activate(settings.TIME_ZONE)
 
 import time
 import logging
@@ -192,7 +195,7 @@ def feverapi(request):
                 if type(e.published) == type(date(1970, 1, 1)):
                     ontime = (e.published - date(1970, 1, 1)).total_seconds()
                 else:
-                    ontime = (e.published - datetime(1970, 1, 1)).total_seconds()
+                    ontime = e.published.utcfromtimestamp()
 
                 ejs = {'id': e.id,
                        'feed_id': e.feed.id,
