@@ -1,5 +1,5 @@
 from django.db.models import BooleanField, DateField, Model, CharField, ForeignKey, \
-    DO_NOTHING, CASCADE, URLField, TextField, AutoField, EmailField
+    DO_NOTHING, CASCADE, URLField, TextField, AutoField, EmailField, DateTimeField
 
 class RSSFeeds(Model):
     """
@@ -32,8 +32,8 @@ class RSSEntries(Model):
     content = TextField("Content")
     id = AutoField(primary_key=True)
     rssid = CharField("ID", max_length=200)
-    published = DateField("Published")
-    update = DateField("Updated")
+    published = DateTimeField("Published")
+    update = DateTimeField("Updated")
     tag = CharField("Tag", max_length=100)
     feed = ForeignKey(RSSFeeds, on_delete=CASCADE)
     is_saved = BooleanField(default=False)
