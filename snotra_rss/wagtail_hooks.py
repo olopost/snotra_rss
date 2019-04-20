@@ -215,6 +215,7 @@ def feverapi(request):
     if 'refresh' in request.GET.keys():
         logging.debug("Update RSS")
         update_rss(request)
+        update_twitter(request)
     for c in Compte.objects.all():
         import hashlib
         m = hashlib.md5()
