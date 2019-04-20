@@ -19,7 +19,7 @@ from time import mktime
 from django.views.decorators.csrf import csrf_exempt
 
 from wagtail.core import hooks
-from .models import RSSEntries, RSSFeeds, Compte
+from .models import RSSEntries, RSSFeeds, Compte, TwitterConfig
 
 if hasattr(ssl, '_create_unverified_context'):
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -75,7 +75,14 @@ class RSSEntriesAdmin(ModelAdmin):
     admin_site = default_django_admin_site
     #end fix
 
-
+class TwitterConfigAdmin(ModelAdmin):
+    """
+    Twitter config admin
+    """
+    model = TwitterConfig
+    menu_label = "Twitter Config"
+    menu_icon = "twitter"
+    menu_order = 310
 
 @hooks.register('rssupdate')
 def update_rss(request):
@@ -272,7 +279,7 @@ class ConsultRss(TemplateView):
 class Snotra(ModelAdminGroup):
     menu_label = "Snotra"
     menu_icon = "book"
-    items = (RSSEntriesAdmin, RSSFeedsAdmin, CompteAdmin)
+    items = (RSSEntriesAdmin, RSSFeedsAdmin, CompteAdmin, TwitterConfigAdmin)
 
 modeladmin_register(Snotra)
 
