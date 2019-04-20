@@ -51,3 +51,12 @@ class RSSEntries(Model):
                            self.title)
 
 
+
+class TwitterConfig(Model):
+    consumer_key = CharField(max_length=40)
+    consumer_secret = CharField(max_length=40)
+    access_token_key = CharField(max_length=40)
+    access_token_secret = CharField(max_length=40)
+    class Meta:
+        verbose_name = "Twitter Config"
+        verbose_name_plural = "Twitter Config"
