@@ -19,14 +19,16 @@ from time import mktime
 from django.views.decorators.csrf import csrf_exempt
 
 from wagtail.core import hooks
-from .models import RSSEntries, RSSFeeds, Compte
+from .models import RSSEntries, RSSFeeds, Compte, TwitterConfig
 
 if hasattr(ssl, '_create_unverified_context'):
     ssl._create_default_https_context = ssl._create_unverified_context
 if __debug__:
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG, filename="debug.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
+    logging.info("logging mode : debug")
 else:
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, filename="snotra.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
+    logging.info("logging mode : info")
 
 
 #from apscheduler.schedulers.background import BackgroundScheduler
@@ -46,8 +48,8 @@ class RSSFeedsAdmin(ModelAdmin):
     menu_label = "RSS Feeds"
     menu_icon = "doc-empty-inverse"
     menu_order = 300
-    list_display = ('name', 'url', 'active')
-    list_filter = ('name', 'url', 'active')
+    list_display = ('name', 'url', 'active', 'twit')
+    list_filter = ('name', 'url', 'active', 'twit')
     search_fields = ('name', 'url')
 
 
@@ -75,7 +77,65 @@ class RSSEntriesAdmin(ModelAdmin):
     admin_site = default_django_admin_site
     #end fix
 
+class TwitterConfigAdmin(ModelAdmin):
+    """
+    Twitter config admin
+    """
+    model = TwitterConfig
+    menu_label = "Twitter Config"
+    menu_icon = "twitter"
+    menu_order = 310
 
+import threading
+LOCALE_LOCK = threading.Lock()
+from contextlib import contextmanager
+
+@contextmanager
+def setlocale(name):
+    import locale
+    with LOCALE_LOCK:
+        saved = locale.setlocale(locale.LC_ALL)
+        try:
+            yield locale.setlocale(locale.LC_ALL, name)
+        finally:
+            locale.setlocale(locale.LC_ALL, saved)
+
+@hooks.register('twitupdate')
+def update_twitter(request):
+    import twitter
+    logging.debug("twitter update call")
+    e = TwitterConfig.objects.get()
+    try:
+        myapi = twitter.Api(consumer_key=str(e.consumer_key),
+                          consumer_secret=str(e.consumer_secret),
+                          access_token_key=str(e.access_token_key),
+                          access_token_secret=str(e.access_token_secret))
+        logging.info(myapi.VerifyCredentials())
+    except twitter.TwitterError as err:
+        logging.error("Twitter init error : " + str(err))
+    feeds = RSSFeeds.objects.filter(active=True, twit=True)
+    for f in feeds:
+        for twit in myapi.GetUserTimeline(screen_name=f.name):
+            import json
+            logging.info(json.dumps(json.loads(twit.AsJsonString()), indent=2))
+            with setlocale('C'):
+                ldate = datetime.strptime(twit.created_at, "%a %b %d %H:%M:%S %z %Y")
+                logging.debug("------------------------------")
+                logging.debug(twit.text)
+                logging.debug(twit.id)
+                logging.debug(twit.urls)
+                mytag = []
+                for i in twit.hashtags:
+                    mytag.append(str(i.text))
+                if len(twit.urls) > 0:
+                    myurl = twit.urls[0].url
+                else:
+                    myurl = ""
+                if not RSSEntries.objects.filter(rssid=twit.id).exists():
+                    em = RSSEntries(feed=f, title=twit.text, content=twit.text, rssid=twit.id,
+                                published=ldate, update=ldate, tag=mytag, url=myurl)
+                    em.save()
+    return redirect('/admin/snotra_rss/rssentries/')
 
 @hooks.register('rssupdate')
 def update_rss(request):
@@ -95,7 +155,7 @@ def update_rss(request):
     except Exception as e:
         logging.error("Erreur durant la suppression")
         messages.add_message(request, messages.ERROR, "Erreur durant la suppression")
-    feeds = RSSFeeds.objects.filter(active=True)
+    feeds = RSSFeeds.objects.filter(active=True,twit=False)
     for f in feeds:
         start = time.time()
         lfeed = feedparser.parse(f.url)
@@ -272,7 +332,7 @@ class ConsultRss(TemplateView):
 class Snotra(ModelAdminGroup):
     menu_label = "Snotra"
     menu_icon = "book"
-    items = (RSSEntriesAdmin, RSSFeedsAdmin, CompteAdmin)
+    items = (RSSEntriesAdmin, RSSFeedsAdmin, CompteAdmin, TwitterConfigAdmin)
 
 modeladmin_register(Snotra)
 

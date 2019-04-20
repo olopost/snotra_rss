@@ -11,6 +11,7 @@ class RSSFeeds(Model):
     name = CharField("Name", max_length=120, null=False)
     url = URLField("URL", null=False)
     active = BooleanField(default=True, null=False)
+    twit = BooleanField(default=False)
 
     class Meta:
         verbose_name = "RSS Feed"
@@ -51,3 +52,12 @@ class RSSEntries(Model):
                            self.title)
 
 
+
+class TwitterConfig(Model):
+    consumer_key = CharField(max_length=100)
+    consumer_secret = CharField(max_length=100)
+    access_token_key = CharField(max_length=100)
+    access_token_secret = CharField(max_length=100)
+    class Meta:
+        verbose_name = "Twitter Config"
+        verbose_name_plural = "Twitter Config"
