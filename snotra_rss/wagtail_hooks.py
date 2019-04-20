@@ -124,14 +124,17 @@ def update_twitter(request):
                 logging.debug(twit.text)
                 logging.debug(twit.id)
                 logging.debug(twit.urls)
+                mytag = []
+                for i in twit.hashtags:
+                    mytag.append(str(i.text))
                 if len(twit.urls) > 0:
                     myurl = twit.urls[0].url
                 else:
                     myurl = ""
-                em = RSSEntries(feed=f, title=twit.text, content=twit.text, rssid=twit.id,
-                                published=ldate, update=ldate, tag=twit.hashtags, url=myurl)
-                logging.debug(em)
-                em.save()
+                if not RSSEntries.objects.filter(rssid=twit.id).exists():
+                    em = RSSEntries(feed=f, title=twit.text, content=twit.text, rssid=twit.id,
+                                published=ldate, update=ldate, tag=mytag, url=myurl)
+                    em.save()
     return redirect('/admin/snotra_rss/rssentries/')
 
 @hooks.register('rssupdate')
