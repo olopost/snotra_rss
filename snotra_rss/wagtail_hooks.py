@@ -135,6 +135,9 @@ def update_twitter(request):
                     em = RSSEntries(feed=f, title=twit.text, content=twit.text, rssid=twit.id,
                                 published=ldate, update=ldate, tag=mytag, url=myurl)
                     em.save()
+                    if em.url == "":
+                        em.url = request.build_absolute_uri('/rss_read/?id=' + str(em.id))
+                        em.save()
     return redirect('/admin/snotra_rss/rssentries/')
 
 @hooks.register('rssupdate')
@@ -194,6 +197,9 @@ def update_rss(request):
                     em = RSSEntries(feed=f, title=e.title, content=e.summary, rssid=e.id,
                                     published=datetime.fromtimestamp(mktime(e.published_parsed)),
                                     update=datetime.fromtimestamp(mktime(e.updated_parsed)), tag=tags, url=link)
+                    em.save()
+                if em.url == "":
+                    em.url = request.build_absolute_uri('/rss_read/?id=' + str(em.id))
                     em.save()
 
             else:
