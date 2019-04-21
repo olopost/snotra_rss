@@ -5,6 +5,10 @@ Wagtail extension for add RSS aggregator feature
 Now full support Fever API !
 Please configure your account in Feed account
 
+
+New in 0.2 twitter aggregator
+and now on pypi just install snotra-rss with pip
+
 ![feed account](doc/feed%20account.png)
 
 
@@ -19,7 +23,7 @@ Please configure your account in Feed account
 ## installation
 add the following line to your requirements.txt file :
 ````
-git+https://github.com/olopost/snotra_rss.git
+snotra-rss
 ````
 
 after that add snotra_rss to INSTALLED_APPS section of your wagtail settings:
