@@ -268,7 +268,7 @@ def feverapi(request):
                        'feed_id': e.feed.id,
                        'title': e.title,
                        'url': e.url,
-                       'is_read': 0,
+                       'is_read': int(e.is_read),
                        'html': e.content,
                        'created_on_time': ontime}
                 myitems.append(ejs)
