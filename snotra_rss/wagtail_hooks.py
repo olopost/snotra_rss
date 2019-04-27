@@ -118,9 +118,7 @@ def update_twitter(request):
         if f.name[0] == '@':
             api_iter = myapi.GetUserTimeline(screen_name=f.name)
         else:  # f.name[0] == '#':
-            print('getsearch for ' + f.name)
             api_iter = myapi.GetSearch(f.name,count=10)
-            print(api_iter)
         for twit in api_iter:
             import json
             logging.info(json.dumps(json.loads(twit.AsJsonString()), indent=2))
