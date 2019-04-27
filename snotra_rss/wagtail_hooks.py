@@ -23,7 +23,7 @@ from .models import RSSEntries, RSSFeeds, Compte, TwitterConfig
 
 if hasattr(ssl, '_create_unverified_context'):
     ssl._create_default_https_context = ssl._create_unverified_context
-if __debug__:
+if settings.DEBUG:
     logging.basicConfig(level=logging.DEBUG, filename="debug.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
     logging.info("logging mode : debug")
 else:
@@ -115,15 +115,17 @@ def update_twitter(request):
         logging.error("Twitter init error : " + str(err))
     feeds = RSSFeeds.objects.filter(active=True, twit=True)
     for f in feeds:
-        for twit in myapi.GetUserTimeline(screen_name=f.name):
+        if f.name[0] == '@':
+            api_iter = myapi.GetUserTimeline(screen_name=f.name)
+        else:  # f.name[0] == '#':
+            print('getsearch for ' + f.name)
+            api_iter = myapi.GetSearch(f.name,count=10)
+            print(api_iter)
+        for twit in api_iter:
             import json
             logging.info(json.dumps(json.loads(twit.AsJsonString()), indent=2))
             with setlocale('C'):
                 ldate = datetime.strptime(twit.created_at, "%a %b %d %H:%M:%S %z %Y")
-                logging.debug("------------------------------")
-                logging.debug(twit.text)
-                logging.debug(twit.id)
-                logging.debug(twit.urls)
                 mytag = []
                 for i in twit.hashtags:
                     mytag.append(str(i.text))

@@ -91,3 +91,13 @@ urlpatterns = [
 3. entries is updated, you can see them in the rss entries section
 
 good usage
+
+
+# Release note
+ - 0.2.2
+   * Add twitter hashtag followup
+     - You can add hashtag in RSS feed in the name field (don't forget to check the twit box)
+ 
+ - 0.2.1
+   * Add twitter followup for person
+     - You can add twitter person in RSS feed in the name field (don't forget to check the name field)
