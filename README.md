@@ -94,7 +94,9 @@ good usage
 
 
 # Release note
- - 0.2.2
+ - 0.2.3.1
+   * change logging mode for request
+ - 0.2.2 and 0.2.3
    * Add twitter hashtag followup
      - You can add hashtag in RSS feed in the name field (don't forget to check the twit box)
  
