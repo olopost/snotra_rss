@@ -10,6 +10,9 @@ from datetime import datetime, timedelta, date
 #from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 from django.utils.timezone import activate
 activate(settings.TIME_ZONE)
+from datadog import api
+
+
 
 import time
 import logging
@@ -204,6 +207,11 @@ def update_rss(request):
                 logging.debug("rss entry already exist : " + str(e.id))
     return redirect('/admin/snotra_rss/rssentries/')
 
+
+def logs(title, text):
+    api.Event.create(tags=['snotra_rss'], title=title, text=text)
+
+
 @csrf_exempt
 def feverapi(request):
     """
@@ -213,8 +221,11 @@ def feverapi(request):
     """
     d = datetime.now()
     logging.info("--- New request ---")
-    logging.info("POST : " + str(request.POST))
-    logging.info("GET  : " + str(request.GET))
+    logs('fever', "new request")
+    if request.POST:
+        logs('fever POST', str(request.POST))
+    if request.GET:
+        logs('fever GET', str(request.GET))
     allowaccount = []
     if 'refresh' in request.GET.keys():
         logging.debug("Update RSS")
