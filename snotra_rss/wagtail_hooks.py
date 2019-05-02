@@ -110,7 +110,6 @@ def update_twitter(request):
                           consumer_secret=str(e.consumer_secret),
                           access_token_key=str(e.access_token_key),
                           access_token_secret=str(e.access_token_secret))
-        logging.info(myapi.VerifyCredentials())
     except twitter.TwitterError as err:
         logging.error("Twitter init error : " + str(err))
     feeds = RSSFeeds.objects.filter(active=True, twit=True)
@@ -121,7 +120,6 @@ def update_twitter(request):
             api_iter = myapi.GetSearch(f.name,count=10)
         for twit in api_iter:
             import json
-            logging.info(json.dumps(json.loads(twit.AsJsonString()), indent=2))
             with setlocale('C'):
                 ldate = datetime.strptime(twit.created_at, "%a %b %d %H:%M:%S %z %Y")
                 mytag = []
@@ -214,9 +212,9 @@ def feverapi(request):
     :return: Json response at a format compatible with fever Api
     """
     d = datetime.now()
-    logging.debug("--- New request ---")
-    logging.debug("POST : " + str(request.POST))
-    logging.debug("GET  : " + str(request.GET))
+    logging.info("--- New request ---")
+    logging.info("POST : " + str(request.POST))
+    logging.info("GET  : " + str(request.GET))
     allowaccount = []
     if 'refresh' in request.GET.keys():
         logging.debug("Update RSS")
@@ -282,7 +280,7 @@ def feverapi(request):
                 else:
                     lu = lu + "," + str(u.id)
             response['saved_item_ids'] = str(lu)
-            logging.debug("Saved : " + str(lu))
+            logging.info("Saved : " + str(lu))
         if 'unread_item_ids' in request.GET:
             unread = RSSEntries.objects.filter(is_read=False)
             lu = ""
@@ -310,7 +308,7 @@ def feverapi(request):
                 item.save()
         if 'mark' in request.POST and request.POST['mark'] == 'feed':
             if 'id' in request.POST.keys() and 'as' in request.POST.keys():
-                logging.debug("Mark feed " + request.POST['id'] + " as " + request.POST['as'])
+                logging.info("Mark feed " + request.POST['id'] + " as " + request.POST['as'])
                 item = RSSEntries.objects.filter(feed__id=request.POST['id'])
                 with transaction.atomic():
                     if request.POST['as'] == 'read':
