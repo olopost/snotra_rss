@@ -10,8 +10,7 @@ from datetime import datetime, timedelta, date
 #from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 from django.utils.timezone import activate
 activate(settings.TIME_ZONE)
-from datadog import api
-
+import json
 
 
 import time
@@ -24,23 +23,58 @@ from django.views.decorators.csrf import csrf_exempt
 from wagtail.core import hooks
 from .models import RSSEntries, RSSFeeds, Compte, TwitterConfig
 
+def logs(status, service, message):
+    import platform
+    llog = {
+        "host": platform.node(),
+        "status": status,
+        "service": service,
+        "message": message,
+    }
+    jlog = json.dumps(llog)
+    mylog = str(jlog)
+    if status == "DEBUG":
+        logger.debug(mylog)
+    elif status == "INFO":
+        logger.info(mylog)
+    elif status == "ERROR":
+        logger.error(mylog)
+    elif status == "CRITICAL":
+        logger.critical(mylog)
+    else:
+        logger.error(mylog)
+
+class MySocketHandler(logging.handlers.SocketHandler):
+    def __init__(self, host, port):
+        logging.handlers.SocketHandler.__init__(self, host, port)
+
+    def makePickle(self, record):
+        return (settings.DATADOG_API + ' ' + record.getMessage() + "\n").encode('utf-8')
+
 if hasattr(ssl, '_create_unverified_context'):
     ssl._create_default_https_context = ssl._create_unverified_context
 if settings.DEBUG:
     logging.basicConfig(level=logging.DEBUG, filename="debug.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
     logging.info("logging mode : debug")
 else:
-    logging.basicConfig(level=logging.INFO, filename="snotra.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
-    logging.info("logging mode : info")
-
-
-#from apscheduler.schedulers.background import BackgroundScheduler
-#scheduler = BackgroundScheduler()
-#from django_apscheduler.jobstores import DjangoJobStore
-
-# If you want all scheduled jobs to use this store by default,
-# use the name 'default' instead of 'djangojobstore'.
-#scheduler.add_jobstore(DjangoJobStore(), "default")
+    import logging.handlers
+    if settings.DATADOG_LOG:
+        print("Datadog logging")
+        logger = logging.getLogger('')
+        logger.setLevel(logging.INFO)
+        c = logging.StreamHandler()
+        sh = MySocketHandler(settings.DATADOG_HOST, settings.DATADOG_PORT)
+        sf = logging.Formatter(settings.DATADOG_API + " %(message)s")
+        sh.setFormatter(sf)
+        c.setFormatter(sf)
+        c.setLevel(logging.INFO)
+        sh.setLevel(logging.INFO)
+        logger.addHandler(sh)
+        logger.addHandler(c)
+        logs('INFO', 'snotra test logger',"go to datadog")
+    else:
+        logging.basicConfig(level=logging.INFO, filename="snotra.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
+        logging.info("logging mode : info")
 
 
 class RSSFeedsAdmin(ModelAdmin):
@@ -166,7 +200,7 @@ def update_rss(request):
         end = time.time()
         del_time = end - start
         messages.add_message(request, messages.INFO, str(f.name) + " - temps de parsing : " + str(round(del_time * 1000, 1)) + " ms")
-        logging.info(str(f.name) + " nb : " + str(len(lfeed.entries)))
+        logs('INFO', 'fever update rss', (str(f.name) + " nb : " + str(len(lfeed.entries))))
         for e in lfeed.entries:
             logging.debug(e)
             if datetime.fromtimestamp(mktime(e.published_parsed)) < deldate:
@@ -208,9 +242,6 @@ def update_rss(request):
     return redirect('/admin/snotra_rss/rssentries/')
 
 
-def logs(title, text):
-    api.Event.create(tags=['snotra_rss'], title=title, text=text)
-
 
 @csrf_exempt
 def feverapi(request):
@@ -220,15 +251,13 @@ def feverapi(request):
     :return: Json response at a format compatible with fever Api
     """
     d = datetime.now()
-    logging.info("--- New request ---")
-    logs('fever', "new request")
+    logs('INFO', 'fever', "new request")
     if request.POST:
-        logs('fever POST', str(request.POST))
+        logs('INFO', 'fever', str(request.POST))
     if request.GET:
-        logs('fever GET', str(request.GET))
+        logs('INFO','fever', str(request.GET))
     allowaccount = []
     if 'refresh' in request.GET.keys():
-        logging.debug("Update RSS")
         update_rss(request)
         update_twitter(request)
     for c in Compte.objects.all():
@@ -245,7 +274,6 @@ def feverapi(request):
             mygroups = [{'id': 1, 'title': 'SnotraRSS'}]
             response['groups'] = mygroups
         if 'feeds' in request.GET:
-            logging.debug('get feeds')
             myfeed = []
             myfeedgroup = []
             for f in RSSFeeds.objects.all():
@@ -291,7 +319,6 @@ def feverapi(request):
                 else:
                     lu = lu + "," + str(u.id)
             response['saved_item_ids'] = str(lu)
-            logging.info("Saved : " + str(lu))
         if 'unread_item_ids' in request.GET:
             unread = RSSEntries.objects.filter(is_read=False)
             lu = ""
@@ -301,10 +328,8 @@ def feverapi(request):
                 else:
                     lu = lu + "," + str(u.id)
             response['unread_item_ids'] = str(lu)
-            logging.debug("Unread : " + str(lu))
         if 'mark' in request.POST and request.POST['mark'] == 'item':
             if 'id' in request.POST.keys() and 'as' in request.POST.keys():
-                logging.debug("Mark item " + request.POST['id'] + " as " + request.POST['as'])
                 item = RSSEntries.objects.get(id=request.POST['id'])
                 if request.POST['as'] == 'read':
                     item.is_read = True
@@ -315,11 +340,10 @@ def feverapi(request):
                 elif request.POST['as'] == 'unsaved':
                     item.is_saved = False
                 else:
-                    logging.error("Unknown value for Mark item : " + str(request.POST))
+                    logs('ERROR', 'fever', "Unknown value for Mark item : " + str(request.POST))
                 item.save()
         if 'mark' in request.POST and request.POST['mark'] == 'feed':
             if 'id' in request.POST.keys() and 'as' in request.POST.keys():
-                logging.info("Mark feed " + request.POST['id'] + " as " + request.POST['as'])
                 item = RSSEntries.objects.filter(feed__id=request.POST['id'])
                 with transaction.atomic():
                     if request.POST['as'] == 'read':
