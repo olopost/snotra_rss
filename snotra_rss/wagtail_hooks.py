@@ -25,12 +25,17 @@ from .models import RSSEntries, RSSFeeds, Compte, TwitterConfig
 
 def logs(status, service, message):
     import platform
-    llog = {
-        "host": platform.node(),
-        "status": status,
-        "service": service,
-        "message": message,
-    }
+    if settings.DATADOG_LOG:
+        llog = {
+            "host": platform.node(),
+            "status": status,
+            "service": service,
+            "message": message,
+        }
+    else:
+        llog = {
+            "message": message
+        }
     jlog = json.dumps(llog)
     mylog = str(jlog)
     if status == "DEBUG":
@@ -44,9 +49,20 @@ def logs(status, service, message):
     else:
         logger.error(mylog)
 
+from pygelf import GelfTlsHandler,GelfTcpHandler, gelf
+class MyOVH(GelfTcpHandler):
+    def convert_record_to_gelf(self, record):
+        l = gelf.make(record, self.domain, self.debug, self.version,
+                    self.additional_fields, self.include_extra_fields)
+        l.update({"_X-OVH-TOKEN": settings.OVH_TOKEN})
+        return gelf.pack(l,self.compress, self.json_default)
+
 class MySocketHandler(logging.handlers.SocketHandler):
     def __init__(self, host, port):
         logging.handlers.SocketHandler.__init__(self, host, port)
+
+    def makePickle(self, record):
+        return (settings.DATADOG_API + ' ' + record.getMessage() + "\n").encode('utf-8')
 
     def makePickle(self, record):
         return (settings.DATADOG_API + ' ' + record.getMessage() + "\n").encode('utf-8')
@@ -72,6 +88,22 @@ else:
         logger.addHandler(sh)
         logger.addHandler(c)
         logs('INFO', 'snotra test logger',"go to datadog")
+    elif settings.OVH_LOG:
+        logger = logging.getLogger('')
+        logger.setLevel(logging.INFO)
+        c = logging.StreamHandler()
+        sh = MyOVH(host=settings.OVH_URL,
+                            port=settings.OVH_PORT,
+                            include_extra_fields=True)
+        sf = logging.Formatter("%(message)s")
+        sh.setFormatter(sf)
+        c.setFormatter(sf)
+        c.setLevel(logging.INFO)
+        sh.setLevel(logging.DEBUG)
+        logger.addHandler(sh)
+        logger.addHandler(c)
+        logs('INFO', 'snotra test logger',"go to datadog")
+
     else:
         logging.basicConfig(level=logging.INFO, filename="snotra.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
         logging.info("logging mode : info")
