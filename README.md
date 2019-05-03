@@ -94,6 +94,8 @@ good usage
 
 
 # Release note
+ - 0.2.3.2
+   * Add datalog support
  - 0.2.3.1
    * change logging mode for request
  - 0.2.2 and 0.2.3
