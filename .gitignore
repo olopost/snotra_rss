@@ -100,5 +100,7 @@ venv.bak/
 # mkdocs documentation
 /site
 
+snotra_rss/settings/dev.py
+production.py
 # mypy
 .mypy_cache/
