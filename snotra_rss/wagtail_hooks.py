@@ -1,6 +1,6 @@
 from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register, ModelAdminGroup
 from django.views.generic.base import TemplateView
-from django.http import JsonResponse
+from django.http import JsonResponse, QueryDict
 from django.contrib import messages
 from django.db import transaction
 from django.shortcuts import redirect
@@ -23,41 +23,34 @@ from django.views.decorators.csrf import csrf_exempt
 from wagtail.core import hooks
 from .models import RSSEntries, RSSFeeds, Compte, TwitterConfig
 
-def logs(status, service, message):
-    import platform
-    if settings.DATADOG_LOG:
-        llog = {
-            "host": platform.node(),
-            "status": status,
-            "service": service,
-            "message": message,
-        }
+def get_client_ip(request):
+    """
+    To put in util / get client IP
+    :param request:
+    :return:
+    """
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
     else:
-        llog = {
-            "message": message
-        }
-    jlog = json.dumps(llog)
-    mylog = str(jlog)
-    if status == "DEBUG":
-        logger.debug(mylog)
-    elif status == "INFO":
-        logger.info(mylog)
-    elif status == "ERROR":
-        logger.error(mylog)
-    elif status == "CRITICAL":
-        logger.critical(mylog)
-    else:
-        logger.error(mylog)
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 from pygelf import GelfTlsHandler,GelfTcpHandler, gelf
 class MyOVH(GelfTcpHandler):
+    """
+    Class to adapt OVH Log management platform
+    """
     def convert_record_to_gelf(self, record):
         l = gelf.make(record, self.domain, self.debug, self.version,
                     self.additional_fields, self.include_extra_fields)
         l.update({"_X-OVH-TOKEN": settings.OVH_TOKEN})
         return gelf.pack(l,self.compress, self.json_default)
 
-class MySocketHandler(logging.handlers.SocketHandler):
+class DataDogHandler(logging.handlers.SocketHandler):
+    """
+    Class to adapt to Datadog Socket Handler
+    """
     def __init__(self, host, port):
         logging.handlers.SocketHandler.__init__(self, host, port)
 
@@ -70,16 +63,18 @@ class MySocketHandler(logging.handlers.SocketHandler):
 if hasattr(ssl, '_create_unverified_context'):
     ssl._create_default_https_context = ssl._create_unverified_context
 if settings.DEBUG:
-    logging.basicConfig(level=logging.DEBUG, filename="debug.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
-    logging.info("logging mode : debug")
+    logger = logging.getLogger('snotra')
+    fh = logging.FileHandler(filename="debug.log")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(fh)
+    logger.info("logging mode : debug")
 else:
     import logging.handlers
     if settings.DATADOG_LOG:
-        print("Datadog logging")
-        logger = logging.getLogger('')
+        logger = logging.getLogger('snotra')
         logger.setLevel(logging.INFO)
         c = logging.StreamHandler()
-        sh = MySocketHandler(settings.DATADOG_HOST, settings.DATADOG_PORT)
+        sh = DataDogHandler(settings.DATADOG_HOST, settings.DATADOG_PORT)
         sf = logging.Formatter(settings.DATADOG_API + " %(message)s")
         sh.setFormatter(sf)
         c.setFormatter(sf)
@@ -87,22 +82,21 @@ else:
         sh.setLevel(logging.INFO)
         logger.addHandler(sh)
         logger.addHandler(c)
-        logs('INFO', 'snotra test logger',"go to datadog")
     elif settings.OVH_LOG:
-        logger = logging.getLogger('')
+        logger = logging.getLogger('snotra')
         logger.setLevel(logging.INFO)
         c = logging.StreamHandler()
+        logger.addHandler(c)
         sh = MyOVH(host=settings.OVH_URL,
-                            port=settings.OVH_PORT,
-                            include_extra_fields=True)
-        sf = logging.Formatter("%(message)s")
+                   port=settings.OVH_PORT,
+                   include_extra_fields=True,
+                   debug=True)
+        sf = logging.Formatter('%(message)s')
         sh.setFormatter(sf)
         c.setFormatter(sf)
-        c.setLevel(logging.INFO)
-        sh.setLevel(logging.DEBUG)
+        c.setLevel(logging.DEBUG)
+        sh.setLevel(logging.INFO)
         logger.addHandler(sh)
-        logger.addHandler(c)
-        logs('INFO', 'snotra test logger',"go to datadog")
 
     else:
         logging.basicConfig(level=logging.INFO, filename="snotra.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
@@ -172,7 +166,7 @@ def setlocale(name):
 @hooks.register('twitupdate')
 def update_twitter(request):
     import twitter
-    logging.debug("twitter update call")
+    logger.info("twitter update call")
     e = TwitterConfig.objects.get()
     try:
         myapi = twitter.Api(consumer_key=str(e.consumer_key),
@@ -180,7 +174,7 @@ def update_twitter(request):
                           access_token_key=str(e.access_token_key),
                           access_token_secret=str(e.access_token_secret))
     except twitter.TwitterError as err:
-        logging.error("Twitter init error : " + str(err))
+        logger.error("Twitter init error : " + str(err))
     feeds = RSSFeeds.objects.filter(active=True, twit=True)
     for f in feeds:
         if f.name[0] == '@':
@@ -216,14 +210,14 @@ def update_rss(request):
     """
     deldate = datetime.now() - timedelta(days=90)
     try:
-        logging.debug("Tentative de suppression")
+        logger.debug("Tentative de suppression")
         e = RSSEntries.objects.filter(published__lte=deldate, is_read=True, is_saved=False)
         messages.add_message(request, messages.INFO, str(len(e)) + " messages supprimés")
         for ee in e:
-            logging.debug("Suppression de " + ee.title)
+            logger.debug("Suppression de " + ee.title)
         e.delete()
     except Exception as e:
-        logging.error("Erreur durant la suppression")
+        logger.error("Erreur durant la suppression")
         messages.add_message(request, messages.ERROR, "Erreur durant la suppression")
     feeds = RSSFeeds.objects.filter(active=True,twit=False)
     for f in feeds:
@@ -232,11 +226,11 @@ def update_rss(request):
         end = time.time()
         del_time = end - start
         messages.add_message(request, messages.INFO, str(f.name) + " - temps de parsing : " + str(round(del_time * 1000, 1)) + " ms")
-        logs('INFO', 'fever update rss', (str(f.name) + " nb : " + str(len(lfeed.entries))))
+        logger.info((str(f.name) + " nb : " + str(len(lfeed.entries))))
         for e in lfeed.entries:
-            logging.debug(e)
+            logger.debug(e)
             if datetime.fromtimestamp(mktime(e.published_parsed)) < deldate:
-                logging.debug("feed < deldate : " + e.title)
+                logger.debug("feed < deldate : " + e.title)
                 break
             if not hasattr(e, 'id'):
                 import hashlib
@@ -270,7 +264,7 @@ def update_rss(request):
                     em.save()
 
             else:
-                logging.debug("rss entry already exist : " + str(e.id))
+                logger.debug("rss entry already exist : " + str(e.id))
     return redirect('/admin/snotra_rss/rssentries/')
 
 
@@ -283,11 +277,11 @@ def feverapi(request):
     :return: Json response at a format compatible with fever Api
     """
     d = datetime.now()
-    logs('INFO', 'fever', "new request")
+    logger.info("new request")
     if request.POST:
-        logs('INFO', 'fever', str(request.POST))
+        logger.info("POST receive", extra=request.POST.dict())
     if request.GET:
-        logs('INFO','fever', str(request.GET))
+        logger.info("POST receive", extra=request.GET.dict())
     allowaccount = []
     if 'refresh' in request.GET.keys():
         update_rss(request)
@@ -372,7 +366,7 @@ def feverapi(request):
                 elif request.POST['as'] == 'unsaved':
                     item.is_saved = False
                 else:
-                    logs('ERROR', 'fever', "Unknown value for Mark item : " + str(request.POST))
+                    logger.error('fever', "Unknown value for Mark item : " + str(request.POST))
                 item.save()
         if 'mark' in request.POST and request.POST['mark'] == 'feed':
             if 'id' in request.POST.keys() and 'as' in request.POST.keys():
@@ -412,4 +406,3 @@ modeladmin_register(Snotra)
 #launch scheduler
 #register_events(scheduler)
 #scheduler.start()
-#print("Scheduler started!")

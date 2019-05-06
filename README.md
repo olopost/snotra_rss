@@ -94,6 +94,9 @@ good usage
 
 
 # Release note
+ - 0.2.3.3
+   * review logging policy and adapt them for graylog
+   * OVH Data log compatible
  - 0.2.3.2
    * Add datalog support
  - 0.2.3.1
