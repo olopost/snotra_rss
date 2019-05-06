@@ -95,7 +95,7 @@ good usage
 
 # Release note
  - 0.2.3.4
-   * Externalize the log handler for OVH Logs Data Platform in a new project : [Pygelf4OVH - Github project](https://github.com/olopost/pygelf4ovh.git)
+   * Externalize the log handler for OVH  Logs Data Platform in a new project : [Pygelf4OVH - Github project](https://github.com/olopost/pygelf4ovh.git)
    * Thanks to : Ivan Mukhin for PyGelf [PyGelf GitHub project](https://github.com/keeprocking/pygelf)
  - 0.2.3.3
    * review logging policy and adapt them for graylog
