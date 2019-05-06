@@ -3,5 +3,5 @@ wagtail>=2.4
 feedparser
 apscheduler
 django-apscheduler
+pygelf4ovh
 python-twitter
-git+https://github.com/olopost/pygelf4ovh.git
