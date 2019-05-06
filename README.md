@@ -94,6 +94,8 @@ good usage
 
 
 # Release note
+ - 0.2.3.5
+   * Add some client_ip tracking
  - 0.2.3.4
    * Externalize the log handler for OVH  Logs Data Platform in a new project : [Pygelf4OVH - Github project](https://github.com/olopost/pygelf4ovh.git)
    * Thanks to : Ivan Mukhin for PyGelf [PyGelf GitHub project](https://github.com/keeprocking/pygelf)

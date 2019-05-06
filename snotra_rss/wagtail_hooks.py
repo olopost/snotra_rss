@@ -158,7 +158,7 @@ def setlocale(name):
 @hooks.register('twitupdate')
 def update_twitter(request):
     import twitter
-    logger.info("twitter update call")
+    logger.info("new request to twitter", extra={"client_ip": get_client_ip(request)})
     e = TwitterConfig.objects.get()
     try:
         myapi = twitter.Api(consumer_key=str(e.consumer_key),
@@ -201,6 +201,7 @@ def update_rss(request):
     :return: HTTP redirection
     """
     deldate = datetime.now() - timedelta(days=90)
+    logger.info("new request to update rss", extra={"client_ip": get_client_ip(request)})
     try:
         logger.debug("Tentative de suppression")
         e = RSSEntries.objects.filter(published__lte=deldate, is_read=True, is_saved=False)
@@ -269,7 +270,7 @@ def feverapi(request):
     :return: Json response at a format compatible with fever Api
     """
     d = datetime.now()
-    logger.info("new request")
+    logger.info("new request to fever", extra={"client_ip": get_client_ip(request)})
     if request.POST:
         logger.info("POST receive", extra=request.POST.dict())
     if request.GET:
