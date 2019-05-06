@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, date
 from django.utils.timezone import activate
 activate(settings.TIME_ZONE)
 import json
-
+from pygelf4ovh import GelfOVHHandler
 
 import time
 import logging
@@ -36,16 +36,7 @@ def get_client_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
-from pygelf import GelfTlsHandler,GelfTcpHandler, gelf
-class MyOVH(GelfTcpHandler):
-    """
-    Class to adapt OVH Log management platform
-    """
-    def convert_record_to_gelf(self, record):
-        l = gelf.make(record, self.domain, self.debug, self.version,
-                    self.additional_fields, self.include_extra_fields)
-        l.update({"_X-OVH-TOKEN": settings.OVH_TOKEN})
-        return gelf.pack(l,self.compress, self.json_default)
+
 
 class DataDogHandler(logging.handlers.SocketHandler):
     """
@@ -85,19 +76,20 @@ else:
     elif settings.OVH_LOG:
         logger = logging.getLogger('snotra')
         logger.setLevel(logging.INFO)
-        c = logging.StreamHandler()
+        import sys
+        c = logging.StreamHandler(sys.stdout)
         logger.addHandler(c)
-        sh = MyOVH(host=settings.OVH_URL,
-                   port=settings.OVH_PORT,
+        sh = GelfOVHHandler(host=settings.OVH_URL,
+                   port=settings.OVH_PORT, ovh_token=settings.OVH_TOKEN,
                    include_extra_fields=True,
                    debug=True)
         sf = logging.Formatter('%(message)s')
         sh.setFormatter(sf)
         c.setFormatter(sf)
         c.setLevel(logging.DEBUG)
-        sh.setLevel(logging.INFO)
+        sh.setLevel(logging.DEBUG)
         logger.addHandler(sh)
-
+        logger.propagate = True
     else:
         logging.basicConfig(level=logging.INFO, filename="snotra.log", format='%(asctime)s - %(name)s - %(threadName)s -  %(levelname)s - %(message)s')
         logging.info("logging mode : info")

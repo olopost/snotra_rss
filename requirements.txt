@@ -4,3 +4,4 @@ feedparser
 apscheduler
 django-apscheduler
 python-twitter
+git+https://github.com/olopost/pygelf4ovh.git
