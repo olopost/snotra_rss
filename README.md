@@ -94,6 +94,8 @@ good usage
 
 
 # Release note
+ - 0.2.3.6
+   * Improvement in tweet display
  - 0.2.3.5
    * Add some client_ip tracking
  - 0.2.3.4

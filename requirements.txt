@@ -1,7 +1,5 @@
 Django>=2.1
 wagtail>=2.4
 feedparser
-apscheduler
-django-apscheduler
 pygelf4ovh
 python-twitter

@@ -123,14 +123,21 @@ class RSSEntriesAdmin(ModelAdmin):
     menu_label = "RSS Entries"
     menu_icon = "doc-empty-inverse"
     menu_order = 300
-    list_display = ('linkurl', 'published', 'update', 'tag')
-    list_filter = ['feed', 'tag']
+    list_display = ('linkurl', 'published', 'update', 'tag_list')
+    list_filter = ['feed', 'tags']
     ordering = ('-update', '-published')
 
     #fix issues in wagtail for django2.2 fix5106
     from django.contrib.admin import site as default_django_admin_site
     admin_site = default_django_admin_site
     #end fix
+
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('tags')
+
+    def tag_list(self, obj):
+        return u", ".join(o.name for o in obj.tags.all())
 
 class TwitterConfigAdmin(ModelAdmin):
     """
@@ -179,14 +186,33 @@ def update_twitter(request):
                 ldate = datetime.strptime(twit.created_at, "%a %b %d %H:%M:%S %z %Y")
                 mytag = []
                 for i in twit.hashtags:
-                    mytag.append(str(i.text))
+                    ltag = json.loads(str(i))['text']
+                    mytag.append(ltag)
                 if len(twit.urls) > 0:
                     myurl = twit.urls[0].url
                 else:
                     myurl = ""
+                import re
+                url_r = re.compile(r'(https://[^ ]+)', re.IGNORECASE)
+                if re.search(url_r, twit.text):
+                    twit_content = url_r.sub(r'<a href="\1">\1</a>', twit.text)
+                    twit_title = url_r.sub('', twit.text)
+                else:
+                    twit_content = twit.text
+                    twit_title = twit.text[0:80]
+                url_r = re.compile(r'(@[^ ]+)', re.IGNORECASE)
+                if re.search(url_r, twit_title):
+                    twit_title = url_r.sub('', twit_title)
+                url_r = re.compile(r'(#[^ ]+)', re.IGNORECASE)
+                tags = re.findall(url_r, twit.text)
+                for t in tags:
+                    logger.info(t)
+                    mytag.append(t[1:])
                 if not RSSEntries.objects.filter(rssid=twit.id).exists():
-                    em = RSSEntries(feed=f, title=twit.text, content=twit.text, rssid=twit.id,
-                                published=ldate, update=ldate, tag=mytag, url=myurl)
+                    em = RSSEntries(feed=f, title=twit_title, content=twit_content, rssid=twit.id,
+                                published=ldate, update=ldate, url=myurl)
+                    for t in mytag:
+                        em.tags.add(t)
                     em.save()
                     if em.url == "":
                         em.url = request.build_absolute_uri('/rss_read/?id=' + str(em.id))
@@ -228,13 +254,15 @@ def update_rss(request):
             if not hasattr(e, 'id'):
                 import hashlib
                 e.id = hashlib.sha1(e.title.encode("utf-8")).hexdigest()
+            mytag = []
             if not RSSEntries.objects.filter(rssid=e.id).exists():
                 if not hasattr(e, 'published_parsed'):
                     e.published_parsed = e.updated_parsed
                 if not hasattr(e, 'tags'):
-                    tags = "no-tags"
+                    pass
                 else:
-                    tags = e.tags[len(e.tags) - 1].term
+                    for i in e.tags:
+                        mytag.append(str(i))
                 if not hasattr(e, 'link'):
                     link = ""
                 else:
@@ -245,15 +273,19 @@ def update_rss(request):
                 if hasattr(e, 'content') and hasattr(e, 'title'):
                     em = RSSEntries(feed=f, title=e.title, content=e.content[0].value, rssid=e.id,
                                     published=datetime.fromtimestamp(mktime(e.published_parsed)),
-                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), tag=tags, url=link)
+                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), url=link)
                     em.save()
                 else:
                     em = RSSEntries(feed=f, title=e.title, content=e.summary, rssid=e.id,
                                     published=datetime.fromtimestamp(mktime(e.published_parsed)),
-                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), tag=tags, url=link)
+                                    update=datetime.fromtimestamp(mktime(e.updated_parsed)), url=link)
                     em.save()
                 if em.url == "":
                     em.url = request.build_absolute_uri('/rss_read/?id=' + str(em.id))
+                    em.save()
+                if len(mytag) > 0:
+                    for t in mytag:
+                        em.tags.add(t)
                     em.save()
 
             else:

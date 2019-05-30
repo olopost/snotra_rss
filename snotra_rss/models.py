@@ -1,5 +1,9 @@
 from django.db.models import BooleanField, DateField, Model, CharField, ForeignKey, \
     DO_NOTHING, CASCADE, URLField, TextField, AutoField, EmailField, DateTimeField
+from modelcluster.contrib.taggit import ClusterTaggableManager
+from modelcluster.models import ClusterableModel
+from modelcluster.fields import ParentalKey
+from taggit.models import TaggedItemBase
 
 class RSSFeeds(Model):
     """
@@ -24,7 +28,11 @@ class Compte(Model):
     email = EmailField("Email")
     passwd = CharField("Password", max_length=40)
 
-class RSSEntries(Model):
+
+class RSSEntriesTag(TaggedItemBase):
+    content_object = ParentalKey('RSSEntries',on_delete=CASCADE, related_name='tag')
+
+class RSSEntries(ClusterableModel):
     """
     Rss entries data Models
     Entries is view as rss source article
@@ -35,7 +43,7 @@ class RSSEntries(Model):
     rssid = CharField("ID", max_length=200)
     published = DateTimeField("Published")
     update = DateTimeField("Updated")
-    tag = CharField("Tag", max_length=100)
+    tags = ClusterTaggableManager(through=RSSEntriesTag, blank=True)
     feed = ForeignKey(RSSFeeds, on_delete=CASCADE)
     is_saved = BooleanField(default=False)
     is_read = BooleanField(default=False)

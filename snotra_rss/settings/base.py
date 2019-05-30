@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     'wagtail.users',
     'wagtail.snippets',
     'wagtail.documents',
-    'django_apscheduler',
     'wagtail.images',
     'wagtail.search',
     'wagtail.admin',
