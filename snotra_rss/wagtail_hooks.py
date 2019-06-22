@@ -311,6 +311,7 @@ def feverapi(request):
     if 'refresh' in request.GET.keys() and (lastrefresh is None or (d - lastrefresh).total_seconds() > 120) :
         update_rss(request)
         update_twitter(request)
+        lastrefresh = d
     for c in Compte.objects.all():
         import hashlib
         m = hashlib.md5()
@@ -409,10 +410,8 @@ def feverapi(request):
                         for i in item:
                             i.is_read = True
                             i.save()
-        lastrefresh = d
         return JsonResponse(response)
     else:
-        lastrefresh = d
         return JsonResponse({})
 
 

@@ -94,6 +94,8 @@ good usage
 
 
 # Release note
+ - 0.2.3.9
+   * correct last refresh bug
  - 0.2.3.8
    * Optimisation / last refresh (block is refresh take less than 2 minutes)
  - 0.2.3.7
