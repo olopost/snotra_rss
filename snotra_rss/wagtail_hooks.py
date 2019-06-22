@@ -19,7 +19,7 @@ import feedparser
 import ssl
 from time import mktime
 from django.views.decorators.csrf import csrf_exempt
-
+lastrefresh = None
 from wagtail.core import hooks
 from .models import RSSEntries, RSSFeeds, Compte, TwitterConfig
 
@@ -293,9 +293,9 @@ def update_rss(request):
     return redirect('/admin/snotra_rss/rssentries/')
 
 
-
 @csrf_exempt
 def feverapi(request):
+    global lastrefresh
     """
     fever compatible api for rss aggregator
     :param request: the request query object
@@ -308,7 +308,7 @@ def feverapi(request):
     if request.GET:
         logger.info("POST receive : %s", request.GET.dict())
     allowaccount = []
-    if 'refresh' in request.GET.keys():
+    if 'refresh' in request.GET.keys() and (lastrefresh is None or (d - lastrefresh).total_seconds() > 120) :
         update_rss(request)
         update_twitter(request)
     for c in Compte.objects.all():
@@ -409,8 +409,10 @@ def feverapi(request):
                         for i in item:
                             i.is_read = True
                             i.save()
+        lastrefresh = d
         return JsonResponse(response)
     else:
+        lastrefresh = d
         return JsonResponse({})
 
 
