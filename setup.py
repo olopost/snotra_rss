@@ -7,7 +7,7 @@ with open("requirements.txt", "r") as rp:
 
 setuptools.setup(
     name="snotra_rss",
-    version="0.2.3.4",
+    version="0.2.3.7",
     author="Samuel MEYNARD",
     author_email="samuel@meyn.fr",
     description="Wagtail app - with rss aggregator and tweeter aggregator feature",

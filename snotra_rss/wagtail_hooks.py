@@ -304,9 +304,9 @@ def feverapi(request):
     d = datetime.now()
     logger.info("new request to fever", extra={"client_ip": get_client_ip(request)})
     if request.POST:
-        logger.info("POST receive", extra=request.POST.dict())
+        logger.info("POST receive : %s", request.POST.dict())
     if request.GET:
-        logger.info("POST receive", extra=request.GET.dict())
+        logger.info("POST receive : %s", request.GET.dict())
     allowaccount = []
     if 'refresh' in request.GET.keys():
         update_rss(request)
@@ -396,6 +396,14 @@ def feverapi(request):
         if 'mark' in request.POST and request.POST['mark'] == 'feed':
             if 'id' in request.POST.keys() and 'as' in request.POST.keys():
                 item = RSSEntries.objects.filter(feed__id=request.POST['id'])
+                with transaction.atomic():
+                    if request.POST['as'] == 'read':
+                        for i in item:
+                            i.is_read = True
+                            i.save()
+        if 'mark' in request.POST and request.POST['mark'] == 'group':
+            if 'id' in request.POST.keys() and 'as' in request.POST.keys():
+                item = RSSEntries.objects.filter(feed_id__gte=request.POST['id'])
                 with transaction.atomic():
                     if request.POST['as'] == 'read':
                         for i in item:

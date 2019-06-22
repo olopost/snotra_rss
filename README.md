@@ -94,6 +94,8 @@ good usage
 
 
 # Release note
+ - 0.2.3.7
+   * bug correction - mark all as read
  - 0.2.3.6
    * Improvement in tweet display
  - 0.2.3.5
