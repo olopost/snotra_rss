@@ -1,4 +1,9 @@
 # snotra_rss
+[![GitHub issues](https://img.shields.io/github/issues/olopost/snotra_rss)](https://github.com/olopost/snotra_rss/issues)
+[![GitHub forks](https://img.shields.io/github/forks/olopost/snotra_rss)](https://github.com/olopost/snotra_rss/network)
+[![GitHub stars](https://img.shields.io/github/stars/olopost/snotra_rss)](https://github.com/olopost/snotra_rss/stargazers)
+[![GitHub license](https://img.shields.io/github/license/olopost/snotra_rss)](https://github.com/olopost/snotra_rss/blob/master/LICENSE)
+[![Twitter](https://img.shields.io/twitter/url?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Folopost%2Fsnotra_rss)
 ## Overview
  - Self hosted rss feed agregator based on wagtail cms.
  - Self hosted twitter feed agregator based on wagtail cms.
@@ -24,7 +29,7 @@ and now on pypi just install snotra-rss with pip
 
 
 
-## installation
+## Install
 add the following line to your requirements.txt file :
 ````
 snotra-rss
