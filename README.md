@@ -1,5 +1,9 @@
 # snotra_rss
-Wagtail extension for add RSS aggregator feature
+## Overview
+ - Self hosted rss feed agregator based on wagtail cms.
+ - Self hosted twitter feed agregator based on wagtail cms.
+
+This is a [Wagtail](https://wagtail.io) extension adding RSS aggregator feature and [Twitter](https://twitter.com) aggregator
 
 ## Big news
 Now full support Fever API !
@@ -121,3 +125,7 @@ good usage
  - 0.2.1
    * Add twitter followup for person
      - You can add twitter person in RSS feed in the name field (don't forget to check the name field)
+     
+
+## Thanks
+- thanks to [Torchbox](https://www.torchbox.com) for wagtail cms application
