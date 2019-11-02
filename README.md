@@ -28,7 +28,14 @@ and now on pypi just install snotra-rss with pip
 
 ![capture of article](doc/article.png)
 
-
+## Test with docker
+ - build docker images with
+ ```shell script
+# in snotra rss directory, type :
+docker build -t snotra .
+# run image with
+docker run -p 8000:8000 --rm snotra
+```
 
 ## Install
 add the following line to your requirements.txt file :
