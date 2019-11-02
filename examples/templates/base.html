@@ -1,0 +1,33 @@
+{% load static wagtailuserbar %}
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8" />
+        <title> Snotra RSS </title>
+        <link href="/static/wagtailadmin/css/core.css" rel="stylesheet"/>
+    </head>
+
+    <body class="homepage">
+        {% wagtailuserbar %}
+        <div class="row" role="banner">
+
+            <header ><h1>Welcome to SnotraRSS</h1></header>
+        </div>
+        <div class="content">
+            <h1>Introduction</h1>
+            <p class="help-block help-info"> Snotra RSS is a RSS aggregator, for any installation help please visit the GitHub page:
+            <a href="https://github.com/olopost/snotra_rss">GitHub page - Snotra RSS</a>
+        </p>
+            <h1>To access Snotra_RSS</h1>
+            <ul>
+
+                <li>For administration access, please go to <a href="/admin">admin page</a></li>
+                <li>For update rss feeds, please go to <a href="/update">update page</a></li>
+                <li>For update twitter feeds, please go to <a href="/twitupdate">update page</a>
+                    <p class="help-block help-warning">Before use <b>update twitter feeds</b>, please set a twitter config</p></li>
+            </ul>
+
+        </div>
+    <footer>Copyright Samuel MEYNARD - @2018-2019 - <a href="http://www.meyn.fr">Samuel MEYNARD</a></footer>
+    </body>
+</html>

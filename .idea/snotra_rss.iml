@@ -21,7 +21,8 @@
     <option name="TEMPLATE_CONFIGURATION" value="Django" />
     <option name="TEMPLATE_FOLDERS">
       <list>
-        <option value="$MODULE_DIR$/home/templates" />
+        <option value="$MODULE_DIR$/examples/templates" />
+        <option value="$MODULE_DIR$/snotra_rss/templates" />
       </list>
     </option>
   </component>

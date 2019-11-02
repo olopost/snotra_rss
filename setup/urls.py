@@ -1,12 +1,14 @@
 from django.conf import settings
+from django.contrib import admin
 from django.conf.urls import include, url
-from snotra_rss.wagtail_hooks import update_rss, ConsultRss, feverapi, update_twitter
+from django.urls import path
+from wagtail.admin import urls as wagtailadmin_urls
 
 urlpatterns = [
-    url(r'^update/$', update_rss, name='rss update'),
-    url(r'^twitupdate/$', update_twitter, name='twit update'),
-    url(r'^rss_read/$', ConsultRss.as_view(), name='rss update'),
-    url(r'^fever/$', feverapi, name="feverapi"),
+    url(r'^admin/', include(wagtailadmin_urls)),
+    url(r'^django-admin/', admin.site.urls),
+    path('', include('snotra_rss.urls')),
+    path('', include('examples.urls') ),
 ]
 
 

@@ -9,6 +9,7 @@
  - Self hosted twitter feed agregator based on wagtail cms.
 
 This is a [Wagtail](https://wagtail.io) extension adding RSS aggregator feature and [Twitter](https://twitter.com) aggregator
+![home](doc/home.png)
 
 ## Big news
 Now full support Fever API !
@@ -103,6 +104,8 @@ good usage
 
 
 # Release note
+ - 0.2.4.0
+   * Refactor organisation and add a homepage if use standalone
  - 0.2.3.9
    * correct last refresh bug
  - 0.2.3.8
