@@ -36,6 +36,8 @@ docker build -t snotra .
 # run image with
 docker run -p 8000:8000 --rm snotra
 ```
+ - next open a browser and navigate to http://localhost:8000
+ 
 
 ## Install
 add the following line to your requirements.txt file :
