@@ -37,9 +37,10 @@ snotra-rss
 ````
 
 after that add snotra_rss to INSTALLED_APPS section of your wagtail settings:
+please also add taggit if not already done
 ````
 INSTALLED_APPS = [
-    'home',
+    'taggit',
     'snotra_rss',
     'corbeille',
     'search',
@@ -58,7 +59,6 @@ INSTALLED_APPS = [
     'wagtail.admin',
     'modelcluster',
     'wagtail.contrib.styleguide',
-    'taggit',
     'wagtail.contrib.postgres_search',
     'django.contrib.admin',
     'django.contrib.auth',
