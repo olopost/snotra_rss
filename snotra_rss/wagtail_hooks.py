@@ -6,8 +6,6 @@ from django.db import transaction
 from django.shortcuts import redirect
 from django.conf import settings
 from datetime import datetime, timedelta, date
-#from apscheduler.schedulers.background import BackgroundScheduler
-#from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 from django.utils.timezone import activate
 activate(settings.TIME_ZONE)
 import json
@@ -22,6 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 lastrefresh = None
 from wagtail.core import hooks
 from .models import RSSEntries, RSSFeeds, Compte, TwitterConfig
+
 
 def get_client_ip(request):
     """
@@ -248,6 +247,8 @@ def update_rss(request):
         logger.info((str(f.name) + " nb : " + str(len(lfeed.entries))))
         for e in lfeed.entries:
             logger.debug(e)
+            if not hasattr(e, 'published_parsed') or e.published_parsed is None:
+                e.published_parsed = datetime.now().timetuple()
             if datetime.fromtimestamp(mktime(e.published_parsed)) < deldate:
                 logger.debug("feed < deldate : " + e.title)
                 break
@@ -256,7 +257,9 @@ def update_rss(request):
                 e.id = hashlib.sha1(e.title.encode("utf-8")).hexdigest()
             mytag = []
             if not RSSEntries.objects.filter(rssid=e.id).exists():
-                if not hasattr(e, 'published_parsed'):
+                if not hasattr(e, 'updated_parsed') or e.updated_parsed is None:
+                    e.updated_parsed = datetime.now().timetuple()
+                if not hasattr(e, 'published_parsed') or e.published_parsed is None:
                     e.published_parsed = e.updated_parsed
                 if not hasattr(e, 'tags'):
                     pass
