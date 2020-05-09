@@ -113,6 +113,9 @@ good usage
 
 
 # Release note
+ - 0.2.5.0
+    * fix bug for url string too long (more than 200 characters)
+    * add refresh entries button to menu bar
  - 0.2.4.0
    * Refactor organisation and add a homepage if use standalone
  - 0.2.3.9

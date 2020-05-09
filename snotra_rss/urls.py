@@ -5,7 +5,7 @@ from snotra_rss.wagtail_hooks import update_rss, ConsultRss, feverapi, update_tw
 urlpatterns = [
     url(r'^update/$', update_rss, name='rss update'),
     url(r'^twitupdate/$', update_twitter, name='twit update'),
-    url(r'^rss_read/$', ConsultRss.as_view(), name='rss update'),
+    url(r'^rss_read/$', ConsultRss.as_view(), name='rss read'),
     url(r'^fever/$', feverapi, name="feverapi"),
 ]
 

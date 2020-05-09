@@ -1,11 +1,15 @@
 from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register, ModelAdminGroup
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, RedirectView
 from django.http import JsonResponse, QueryDict
 from django.contrib import messages
 from django.db import transaction
 from django.shortcuts import redirect
 from django.conf import settings
+from wagtail.admin.menu import MenuItem
+from django.urls import reverse
 from datetime import datetime, timedelta, date
+from django.contrib.auth.models import Permission
+from django.conf.urls import url
 from django.utils.timezone import activate
 activate(settings.TIME_ZONE)
 import json
@@ -106,7 +110,30 @@ class RSSFeedsAdmin(ModelAdmin):
     list_filter = ('name', 'url', 'active', 'twit')
     search_fields = ('name', 'url')
 
+class UpdateAdmin(RedirectView):
+    menu_label = "Update RSS Entries"
+    menu_icon = "doc-empty-inverse"
+    menu_order = 300
+    add_to_settings_menu = False
+    permanent = False
+    query_string = True
+    pattern_name = 'rss update'
 
+    def get_admin_urls_for_registration(self):
+        return ()
+
+    def get_redirect_url(self, *args, **kwargs):
+        return super().get_redirect_url(*args, **kwargs)
+
+    def will_modify_explorer_page_queryset(self):
+        return False
+
+
+    def get_menu_item(self, order=None):
+        return MenuItem('RSS entries update', reverse("rss update"), classnames='icon icon-refresh', order=10000)
+
+    def get_permissions_for_registration(self):
+        return Permission.objects.none()
 
 class CompteAdmin(ModelAdmin):
     model = Compte
@@ -435,7 +462,7 @@ class ConsultRss(TemplateView):
 class Snotra(ModelAdminGroup):
     menu_label = "Snotra"
     menu_icon = "book"
-    items = (RSSEntriesAdmin, RSSFeedsAdmin, CompteAdmin, TwitterConfigAdmin)
+    items = (RSSEntriesAdmin, RSSFeedsAdmin, CompteAdmin, TwitterConfigAdmin, UpdateAdmin)
 
 modeladmin_register(Snotra)
 
