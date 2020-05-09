@@ -3,3 +3,4 @@ wagtail>=2.4
 feedparser
 pygelf4ovh
 python-twitter
+psycopg2

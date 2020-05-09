@@ -269,7 +269,7 @@ def update_rss(request):
                 if not hasattr(e, 'link'):
                     link = ""
                 else:
-                    link = e.link
+                    link = e.link[:200]
                 if not hasattr(e, 'id'):
                     import hashlib
                     e.id = hashlib.sha1(e.title.encode("utf-8")).hexdigest()
