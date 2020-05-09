@@ -14,20 +14,16 @@
     </header>
 
 
-    <h2>Liste des feeds</h2>
-    <ul>
-
-        {% for f in feeds %}
-         <li> {{ f.name }}</li>
-        {% endfor %}
-    </ul>
-    <h2>Liste des articles</h2>
-    <ul>
+    <h2>Article</h2>
+    <div class="nice-padding">
 
         {% for f in entries %}
-            <li> {{ f.content|safe }}</li>
+            <section>
+            <h2> {{ f.title }}</h2>
+                {{ f.content|safe }}
+            </section>
         {% endfor %}
-    </ul>
+    </div>
     <h2>Mettre à jour</h2>
 <form method="post" action="/update/">
   {% csrf_token %}

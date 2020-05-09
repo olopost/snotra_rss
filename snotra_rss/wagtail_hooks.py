@@ -112,7 +112,7 @@ class RSSFeedsAdmin(ModelAdmin):
 
 class UpdateAdmin(RedirectView):
     menu_label = "Update RSS Entries"
-    menu_icon = "doc-empty-inverse"
+    menu_icon = "repeat"
     menu_order = 300
     add_to_settings_menu = False
     permanent = False
