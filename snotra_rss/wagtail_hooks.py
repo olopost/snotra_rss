@@ -130,7 +130,7 @@ class UpdateAdmin(RedirectView):
 
 
     def get_menu_item(self, order=None):
-        return MenuItem('RSS entries update', reverse("rss update"), classnames='icon icon-refresh', order=10000)
+        return MenuItem('RSS entries update', reverse("rss update"), classnames='icon icon-repeat', order=10000)
 
     def get_permissions_for_registration(self):
         return Permission.objects.none()
@@ -171,7 +171,7 @@ class TwitterConfigAdmin(ModelAdmin):
     """
     model = TwitterConfig
     menu_label = "Twitter Config"
-    menu_icon = "twitter"
+    menu_icon = "cogs"
     menu_order = 310
 
 import threading
