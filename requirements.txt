@@ -4,3 +4,5 @@ feedparser
 pygelf4ovh
 python-twitter
 psycopg2
+twine
+setuptools
