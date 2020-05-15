@@ -113,6 +113,8 @@ good usage
 
 
 # Release note
+ - 0.2.5.1
+    * fix icon bug
  - 0.2.5.0
     * fix bug for url string too long (more than 200 characters)
     * add refresh entries button to menu bar
