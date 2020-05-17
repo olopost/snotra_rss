@@ -14,7 +14,7 @@ from django.utils.timezone import activate
 activate(settings.TIME_ZONE)
 import json
 from pygelf4ovh import GelfOVHHandler
-
+import socket
 import time
 import logging
 import feedparser
@@ -267,7 +267,11 @@ def update_rss(request):
     feeds = RSSFeeds.objects.filter(active=True,twit=False)
     for f in feeds:
         start = time.time()
-        lfeed = feedparser.parse(f.url)
+        socket.setdefaulttimeout(2)
+        try:
+            lfeed = feedparser.parse(f.url)
+        except socket.timeout:
+            messages.add_message(request, messages.ERROR, "Erreur de timeout : " + str(f.name))
         end = time.time()
         del_time = end - start
         messages.add_message(request, messages.INFO, str(f.name) + " - temps de parsing : " + str(round(del_time * 1000, 1)) + " ms")

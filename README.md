@@ -113,6 +113,8 @@ good usage
 
 
 # Release note
+ - 0.2.5.3
+    * add rss feed parser timeout to 2s (please try in gui if you check some error)
  - 0.2.5.1
     * fix icon bug
  - 0.2.5.0
