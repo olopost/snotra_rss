@@ -296,7 +296,10 @@ def update_rss(request):
                     pass
                 else:
                     for i in e.tags:
-                        mytag.append(str(i))
+                        if hasattr(i, 'term'):
+                            mytag.append(str(i.term))
+                        else:
+                            messages.add_message(request, messages.ERROR, f'{ e } as no term attibute')
                 if not hasattr(e, 'link'):
                     link = ""
                 else:
