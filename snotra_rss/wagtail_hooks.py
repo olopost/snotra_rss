@@ -307,13 +307,15 @@ def update_rss(request):
                 if not hasattr(e, 'id'):
                     import hashlib
                     e.id = hashlib.sha1(e.title.encode("utf-8")).hexdigest()
+                else:
+                    e.id = e.id[:200]
                 if hasattr(e, 'content') and hasattr(e, 'title'):
-                    em = RSSEntries(feed=f, title=e.title, content=e.content[0].value, rssid=e.id,
+                    em = RSSEntries(feed=f, title=e.title[:200], content=e.content[0].value, rssid=e.id,
                                     published=datetime.fromtimestamp(mktime(e.published_parsed)),
                                     update=datetime.fromtimestamp(mktime(e.updated_parsed)), url=link)
                     em.save()
                 else:
-                    em = RSSEntries(feed=f, title=e.title, content=e.summary, rssid=e.id,
+                    em = RSSEntries(feed=f, title=e.title[:200], content=e.summary, rssid=e.id,
                                     published=datetime.fromtimestamp(mktime(e.published_parsed)),
                                     update=datetime.fromtimestamp(mktime(e.updated_parsed)), url=link)
                     em.save()

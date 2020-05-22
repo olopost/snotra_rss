@@ -32,6 +32,7 @@ class Compte(Model):
 class RSSEntriesTag(TaggedItemBase):
     content_object = ParentalKey('RSSEntries',on_delete=CASCADE, related_name='tag')
 
+
 class RSSEntries(ClusterableModel):
     """
     Rss entries data Models
@@ -53,6 +54,9 @@ class RSSEntries(ClusterableModel):
         verbose_name = "RSS Entry"
         verbose_name_plural = "RSS Entries"
 
+    def __repr__(self):
+        return self.title
+
     def linkurl(self):
         from django.utils.html import format_html
         return format_html('<a href="/rss_read?id={}">{}</a>',
@@ -60,6 +64,20 @@ class RSSEntries(ClusterableModel):
                            self.title)
 
 
+from django.db.models.signals import pre_delete
+from taggit.models import Tag
+def after_deleting(sender, instance, **kwargs):
+    print(f"After deleting... {instance}")
+    tags = sender.tags.all()
+    for tag in tags.iterator():
+        print(tag, tag.id)
+        count = RSSEntries.objects.filter(tags__id__in=[tag.id]).count()
+        print(f"count: {count}")
+        if count == 1:
+            print('delete')
+            Tag.objects.filter(id=tag.id).delete()
+
+pre_delete.connect(after_deleting, sender=RSSEntries)
 
 class TwitterConfig(Model):
     consumer_key = CharField(max_length=100)
