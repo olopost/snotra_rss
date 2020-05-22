@@ -262,8 +262,7 @@ def update_rss(request):
             logger.debug("Suppression de " + ee.title)
         e.delete()
     except Exception as e:
-        logger.error("Erreur durant la suppression")
-        messages.add_message(request, messages.ERROR, "Erreur durant la suppression")
+        messages.add_message(request, messages.ERROR, f"Erreur durant la suppression: {e}")
     feeds = RSSFeeds.objects.filter(active=True,twit=False)
     for f in feeds:
         start = time.time()

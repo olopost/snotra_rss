@@ -67,14 +67,11 @@ class RSSEntries(ClusterableModel):
 from django.db.models.signals import pre_delete
 from taggit.models import Tag
 def after_deleting(sender, instance, **kwargs):
-    print(f"After deleting... {instance}")
     tags = sender.tags.all()
     for tag in tags.iterator():
         print(tag, tag.id)
         count = RSSEntries.objects.filter(tags__id__in=[tag.id]).count()
-        print(f"count: {count}")
         if count == 1:
-            print('delete')
             Tag.objects.filter(id=tag.id).delete()
 
 pre_delete.connect(after_deleting, sender=RSSEntries)
