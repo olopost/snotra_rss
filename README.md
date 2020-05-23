@@ -1,4 +1,4 @@
-# snotra_rss
+# snotra_rss ![logo](doc/snotra_logo.png)
 [![GitHub issues](https://img.shields.io/github/issues/olopost/snotra_rss)](https://github.com/olopost/snotra_rss/issues)
 [![GitHub forks](https://img.shields.io/github/forks/olopost/snotra_rss)](https://github.com/olopost/snotra_rss/network)
 [![GitHub stars](https://img.shields.io/github/stars/olopost/snotra_rss)](https://github.com/olopost/snotra_rss/stargazers)

@@ -469,7 +469,7 @@ class ConsultRss(TemplateView):
 
 class Snotra(ModelAdminGroup):
     menu_label = "Snotra"
-    menu_icon = "book"
+    menu_icon = "snotra"
     items = (RSSEntriesAdmin, RSSFeedsAdmin, CompteAdmin, TwitterConfigAdmin, UpdateAdmin)
 
 modeladmin_register(Snotra)
