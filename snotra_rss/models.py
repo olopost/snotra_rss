@@ -69,7 +69,6 @@ from taggit.models import Tag
 def after_deleting(sender, instance, **kwargs):
     tags = sender.tags.all()
     for tag in tags.iterator():
-        print(tag, tag.id)
         count = RSSEntries.objects.filter(tags__id__in=[tag.id]).count()
         if count == 1:
             Tag.objects.filter(id=tag.id).delete()
