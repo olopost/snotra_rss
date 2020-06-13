@@ -408,7 +408,7 @@ def feverapi(request):
                     lu = lu + "," + str(u.id)
             response['saved_item_ids'] = str(lu)
         if 'unread_item_ids' in request.GET:
-            unread = RSSEntries.objects.filter(is_read=False)
+            unread = RSSEntries.objects.filter(is_read=False)[:50]
             lu = ""
             for u in unread:
                 if lu == "":
