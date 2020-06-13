@@ -274,7 +274,6 @@ def update_rss(request):
         end = time.time()
         del_time = end - start
         messages.add_message(request, messages.INFO, str(f.name) + " - temps de parsing : " + str(round(del_time * 1000, 1)) + " ms")
-        logger.info((str(f.name) + " nb : " + str(len(lfeed.entries))))
         for e in lfeed.entries:
             logger.debug(e)
             if not hasattr(e, 'published_parsed') or e.published_parsed is None:
