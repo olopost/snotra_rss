@@ -24,6 +24,7 @@ from django.views.decorators.csrf import csrf_exempt
 lastrefresh = None
 from wagtail.core import hooks
 from .models import RSSEntries, RSSFeeds, Compte, TwitterConfig
+import sys
 
 
 def get_client_ip(request):
@@ -382,7 +383,7 @@ def feverapi(request):
             if 'since_id' in request.GET.keys():
                 entries = RSSEntries.objects.filter(id__gt=int(request.GET['since_id']))
             else:
-                entries = RSSEntries.objects.all()
+                entries = RSSEntries.objects.all()[:50]
             for e in entries:
                 if type(e.published) == type(date(1970, 1, 1)):
                     ontime = (e.published - date(1970, 1, 1)).total_seconds()
@@ -408,6 +409,7 @@ def feverapi(request):
                     lu = lu + "," + str(u.id)
             response['saved_item_ids'] = str(lu)
         if 'unread_item_ids' in request.GET:
+            # limitation to 50 in order to avoid invalid request block size
             unread = RSSEntries.objects.filter(is_read=False)[:50]
             lu = ""
             for u in unread:
