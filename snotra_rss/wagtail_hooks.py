@@ -381,9 +381,9 @@ def feverapi(request):
         myitems = []
         if 'items' in request.GET:
             if 'since_id' in request.GET.keys():
-                entries = RSSEntries.objects.filter(id__gt=int(request.GET['since_id']))[:100]
+                entries = RSSEntries.objects.filter(id__gt=int(request.GET['since_id']))[:50]
             else:
-                entries = RSSEntries.objects.all()[:100]
+                entries = RSSEntries.objects.all()[:50]
             for e in entries:
                 if type(e.published) == type(date(1970, 1, 1)):
                     ontime = (e.published - date(1970, 1, 1)).total_seconds()
@@ -400,7 +400,7 @@ def feverapi(request):
                 myitems.append(ejs)
                 response['items'] = myitems
         if 'saved_item_ids' in request.GET:
-            star = RSSEntries.objects.filter(is_saved=True)
+            star = RSSEntries.objects.filter(is_saved=True)[:50]
             lu = ""
             for u in star:
                 if lu == "":
@@ -410,7 +410,7 @@ def feverapi(request):
             response['saved_item_ids'] = str(lu)
         if 'unread_item_ids' in request.GET:
             # limitation to 50 in order to avoid invalid request block size
-            unread = RSSEntries.objects.filter(is_read=False)[:100]
+            unread = RSSEntries.objects.filter(is_read=False)[:50]
             lu = ""
             for u in unread:
                 if lu == "":
