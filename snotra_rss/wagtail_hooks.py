@@ -232,7 +232,6 @@ def update_twitter(request):
                 url_r = re.compile(r'(#[^ ]+)', re.IGNORECASE)
                 tags = re.findall(url_r, twit.text)
                 for t in tags:
-                    logger.info(t)
                     mytag.append(t[1:])
                 if not RSSEntries.objects.filter(rssid=twit.id).exists():
                     em = RSSEntries(feed=f, title=twit_title, content=twit_content, rssid=twit.id,
