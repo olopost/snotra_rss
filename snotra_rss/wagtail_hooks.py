@@ -349,12 +349,18 @@ def feverapi(request):
         update_rss(request)
         update_twitter(request)
         lastrefresh = d
+    limited = None
     for c in Compte.objects.all():
         import hashlib
         m = hashlib.md5()
         myhash = str(c.email) + ":" + str(c.passwd)
         m.update(myhash.encode('utf-8'))
         allowaccount.append(m.hexdigest())
+        if c.fever_unlimited:
+            limited = 0
+        elif c.fever_limit:
+            if limited != 0:
+                limited = c.fever_limit
     response = {}
     if 'api_key' in request.POST.keys() and request.POST['api_key'] in allowaccount:
         response['api_version'] = 3.0
@@ -384,6 +390,8 @@ def feverapi(request):
                 entries = RSSEntries.objects.filter(id__gt=int(request.GET['since_id']))
             else:
                 entries = RSSEntries.objects.all()
+            if limited > 0:
+                entries = entries[:limited]
             for e in entries:
                 if type(e.published) == type(date(1970, 1, 1)):
                     ontime = (e.published - date(1970, 1, 1)).total_seconds()
@@ -402,6 +410,8 @@ def feverapi(request):
         if 'saved_item_ids' in request.GET:
             star = RSSEntries.objects.filter(is_saved=True)
             lu = ""
+            if limited > 0:
+                star = star[:limited]
             for u in star:
                 if lu == "":
                     lu = str(u.id)
@@ -412,6 +422,8 @@ def feverapi(request):
             # limitation to 50 in order to avoid invalid request block size
             unread = RSSEntries.objects.filter(is_read=False)
             lu = ""
+            if limited > 0:
+                unread = unread[:limited]
             for u in unread:
                 if lu == "":
                     lu = str(u.id)

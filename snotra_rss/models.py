@@ -1,5 +1,5 @@
 from django.db.models import BooleanField, DateField, Model, CharField, ForeignKey, \
-    DO_NOTHING, CASCADE, URLField, TextField, AutoField, EmailField, DateTimeField
+    DO_NOTHING, CASCADE, URLField, TextField, AutoField, EmailField, DateTimeField, IntegerField
 from modelcluster.contrib.taggit import ClusterTaggableManager
 from modelcluster.models import ClusterableModel
 from modelcluster.fields import ParentalKey
@@ -27,7 +27,8 @@ class RSSFeeds(Model):
 class Compte(Model):
     email = EmailField("Email")
     passwd = CharField("Password", max_length=40)
-
+    fever_unlimited = BooleanField("Fever_unlimited", default=True)
+    fever_limit = IntegerField("Nb of articles", default=1000)
 
 class RSSEntriesTag(TaggedItemBase):
     content_object = ParentalKey('RSSEntries',on_delete=CASCADE, related_name='tag')
