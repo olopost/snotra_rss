@@ -113,6 +113,8 @@ good usage
 
 
 # Release note
+ - 0.2.5.5
+    * update setup.py
  - 0.2.5.4
     * Fix tag issue
  - 0.2.5.3
