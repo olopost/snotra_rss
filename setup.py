@@ -7,7 +7,7 @@ with open("requirements.txt", "r") as rp:
 
 setuptools.setup(
     name="snotra_rss",
-    version="0.2.5.4",
+    version="0.2.5.5",
     author="Samuel MEYNARD",
     author_email="samuel@meyn.fr",
     description="Wagtail app - with rss aggregator and tweeter aggregator feature",
@@ -23,6 +23,11 @@ setuptools.setup(
     package_dir={'snotra_rss': 'snotra_rss'},
     classifiers=[
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
